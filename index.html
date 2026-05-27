@@ -30,23 +30,18 @@
       overflow-x: hidden;
     }
 
-    /* Scanline overlay */
     body::before {
       content: '';
       position: fixed;
       inset: 0;
       background: repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 2px,
-        rgba(0,255,136,0.015) 2px,
-        rgba(0,255,136,0.015) 4px
+        0deg, transparent, transparent 2px,
+        rgba(0,255,136,0.015) 2px, rgba(0,255,136,0.015) 4px
       );
       pointer-events: none;
       z-index: 9999;
     }
 
-    /* Grid background */
     body::after {
       content: '';
       position: fixed;
@@ -59,6 +54,294 @@
       z-index: 0;
     }
 
+    /* ══════════════════════════════════════════
+       BOOT SCREEN
+    ══════════════════════════════════════════ */
+    #bootScreen {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      z-index: 8000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    #bootScreen.fade-out {
+      animation: fadeOut 0.8s ease forwards;
+    }
+
+    @keyframes fadeOut {
+      to { opacity: 0; pointer-events: none; }
+    }
+
+    .boot-logo {
+      font-family: var(--font-display);
+      font-size: clamp(32px, 8vw, 64px);
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      text-shadow: 0 0 40px rgba(0,255,136,0.5), 0 0 80px rgba(0,255,136,0.2);
+      margin-bottom: 6px;
+      animation: glitch 4s infinite;
+    }
+
+    .boot-logo span { color: var(--accent2); text-shadow: 0 0 40px rgba(0,204,255,0.5); }
+
+    @keyframes glitch {
+      0%, 92%, 100% { transform: none; filter: none; }
+      93%  { transform: skewX(-2deg) translateX(3px); filter: hue-rotate(90deg); }
+      94%  { transform: skewX(2deg) translateX(-3px); }
+      95%  { transform: none; filter: none; }
+      96%  { transform: translateX(2px); filter: hue-rotate(-90deg); }
+      97%  { transform: none; filter: none; }
+    }
+
+    .boot-subtitle {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      margin-bottom: 48px;
+    }
+
+    .boot-terminal {
+      width: 100%;
+      max-width: 560px;
+      background: rgba(0,0,0,0.6);
+      border: 1px solid var(--border);
+      padding: 20px 24px;
+      margin-bottom: 32px;
+      min-height: 220px;
+      font-size: 12px;
+      line-height: 1.9;
+      letter-spacing: 0.05em;
+    }
+
+    .boot-line {
+      display: flex;
+      gap: 10px;
+      opacity: 0;
+      animation: lineIn 0.1s ease forwards;
+    }
+
+    @keyframes lineIn {
+      to { opacity: 1; }
+    }
+
+    .boot-line .prompt { color: var(--accent); flex-shrink: 0; }
+    .boot-line .ok     { color: var(--accent); margin-left: auto; flex-shrink: 0; }
+    .boot-line .warn   { color: #ffcc00; margin-left: auto; flex-shrink: 0; }
+    .boot-line .txt    { color: var(--text); flex: 1; }
+    .boot-line .dim    { color: var(--muted); flex: 1; }
+
+    .boot-progress-wrap {
+      width: 100%;
+      max-width: 560px;
+      margin-bottom: 12px;
+    }
+
+    .boot-progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .boot-progress-label span { color: var(--accent); }
+
+    .boot-bar-track {
+      height: 4px;
+      background: var(--border);
+      overflow: hidden;
+    }
+
+    .boot-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      box-shadow: 0 0 16px rgba(0,255,136,0.6);
+      transition: width 0.2s linear;
+    }
+
+    .boot-status {
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-top: 10px;
+    }
+
+    /* ══════════════════════════════════════════
+       TERMS SCREEN
+    ══════════════════════════════════════════ */
+    #termsScreen {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      z-index: 7000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    #termsScreen.visible {
+      display: flex;
+      animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .terms-box {
+      width: 100%;
+      max-width: 580px;
+      border: 1px solid var(--accent);
+      background: var(--surface);
+      box-shadow: 0 0 60px rgba(0,255,136,0.08);
+    }
+
+    .terms-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .terms-header-icon { font-size: 20px; }
+
+    .terms-header-title {
+      font-family: var(--font-display);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+
+    .terms-header-sub {
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      margin-top: 2px;
+    }
+
+    .terms-body {
+      padding: 20px 24px;
+      max-height: 320px;
+      overflow-y: auto;
+      font-size: 11px;
+      line-height: 1.8;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+    }
+
+    .terms-body::-webkit-scrollbar { width: 4px; }
+    .terms-body::-webkit-scrollbar-track { background: var(--bg); }
+    .terms-body::-webkit-scrollbar-thumb { background: var(--border); }
+
+    .terms-body h4 {
+      font-family: var(--font-display);
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--accent2);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin: 16px 0 6px;
+    }
+
+    .terms-body h4:first-child { margin-top: 0; }
+
+    .terms-body p { margin-bottom: 6px; color: var(--text); }
+    .terms-body ul { padding-left: 16px; }
+    .terms-body li { margin-bottom: 4px; }
+    .terms-body strong { color: var(--accent); }
+    .terms-body .warn-text { color: var(--danger); }
+
+    .terms-footer {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .terms-checkbox-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 11px;
+      color: var(--text);
+      cursor: pointer;
+      letter-spacing: 0.05em;
+    }
+
+    .terms-checkbox-row input[type="checkbox"] {
+      accent-color: var(--accent);
+      width: 14px;
+      height: 14px;
+      margin-top: 2px;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .terms-btn-row { display: flex; gap: 10px; }
+
+    .terms-agree-btn {
+      flex: 1;
+      padding: 14px;
+      background: var(--accent);
+      color: #000;
+      border: none;
+      font-family: var(--font-display);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: box-shadow 0.2s, transform 0.1s;
+    }
+
+    .terms-agree-btn:disabled {
+      background: var(--muted);
+      color: #333;
+      cursor: not-allowed;
+    }
+
+    .terms-agree-btn:not(:disabled):hover {
+      box-shadow: 0 0 30px rgba(0,255,136,0.4);
+      transform: translateY(-1px);
+    }
+
+    .terms-decline-btn {
+      padding: 14px 20px;
+      background: none;
+      border: 1px solid var(--danger);
+      color: var(--danger);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      cursor: pointer;
+      letter-spacing: 0.1em;
+      transition: background 0.15s;
+    }
+
+    .terms-decline-btn:hover { background: rgba(255,51,85,0.08); }
+
+    /* ══════════════════════════════════════════
+       MAIN APP
+    ══════════════════════════════════════════ */
+    #app { display: none; }
+    #app.visible { display: block; animation: fadeIn 0.5s ease; }
+
     .wrap {
       position: relative;
       z-index: 1;
@@ -67,7 +350,6 @@
       padding: 0 20px 80px;
     }
 
-    /* ── Header ── */
     header {
       padding: 48px 0 32px;
       border-bottom: 1px solid var(--border);
@@ -84,10 +366,7 @@
       line-height: 1;
     }
 
-    .logo span {
-      color: var(--accent2);
-      text-shadow: 0 0 30px rgba(0,204,255,0.4);
-    }
+    .logo span { color: var(--accent2); text-shadow: 0 0 30px rgba(0,204,255,0.4); }
 
     .tagline {
       margin-top: 10px;
@@ -99,7 +378,6 @@
 
     .tagline::before { content: '> '; color: var(--accent); }
 
-    /* ── Stats bar ── */
     .stats-bar {
       display: flex;
       gap: 32px;
@@ -117,7 +395,6 @@
     .stat-val { font-size: 18px; color: var(--accent); font-family: var(--font-display); font-weight: 700; }
     .stat-label { text-transform: uppercase; }
 
-    /* ── Drop zone ── */
     .drop-zone {
       border: 1px dashed var(--accent);
       background: rgba(0,255,136,0.02);
@@ -131,7 +408,6 @@
 
     .drop-zone:hover, .drop-zone.drag-over {
       background: rgba(0,255,136,0.06);
-      border-color: var(--accent);
       box-shadow: 0 0 40px rgba(0,255,136,0.08), inset 0 0 40px rgba(0,255,136,0.04);
     }
 
@@ -144,12 +420,7 @@
       height: 100%;
     }
 
-    .drop-icon {
-      font-size: 42px;
-      margin-bottom: 16px;
-      display: block;
-      filter: drop-shadow(0 0 12px rgba(0,255,136,0.5));
-    }
+    .drop-icon { font-size: 42px; margin-bottom: 16px; display: block; filter: drop-shadow(0 0 12px rgba(0,255,136,0.5)); }
 
     .drop-title {
       font-family: var(--font-display);
@@ -161,15 +432,9 @@
       margin-bottom: 8px;
     }
 
-    .drop-sub {
-      font-size: 11px;
-      color: var(--muted);
-      letter-spacing: 0.1em;
-    }
-
+    .drop-sub { font-size: 11px; color: var(--muted); letter-spacing: 0.1em; }
     .drop-sub span { color: var(--accent2); }
 
-    /* ── Queue ── */
     .queue { display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
 
     .queue-item {
@@ -188,14 +453,12 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
+    .queue-item.too-large { border-color: var(--danger); background: rgba(255,51,85,0.04); }
+
     .queue-type {
-      width: 36px;
-      height: 36px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      flex-shrink: 0;
+      width: 36px; height: 36px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
       background: rgba(255,255,255,0.03);
       border: 1px solid var(--border);
     }
@@ -203,406 +466,378 @@
     .queue-info { flex: 1; min-width: 0; }
     .queue-name { color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .queue-size { color: var(--muted); font-size: 11px; margin-top: 2px; }
+    .queue-size.over { color: var(--danger); }
 
     .queue-remove {
-      background: none;
-      border: 1px solid var(--border);
-      color: var(--danger);
-      cursor: pointer;
-      padding: 4px 8px;
-      font-family: var(--font-mono);
-      font-size: 11px;
-      transition: background 0.15s;
-      flex-shrink: 0;
+      background: none; border: 1px solid var(--border);
+      color: var(--danger); cursor: pointer;
+      padding: 4px 8px; font-family: var(--font-mono);
+      font-size: 11px; transition: background 0.15s; flex-shrink: 0;
     }
     .queue-remove:hover { background: rgba(255,51,85,0.1); }
 
-    /* ── Upload btn ── */
     .upload-btn {
-      width: 100%;
-      padding: 16px;
-      background: var(--accent);
-      color: #000;
-      border: none;
-      font-family: var(--font-display);
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: box-shadow 0.2s, transform 0.1s;
+      width: 100%; padding: 16px;
+      background: var(--accent); color: #000;
+      border: none; font-family: var(--font-display);
+      font-size: 13px; font-weight: 700;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      cursor: pointer; transition: box-shadow 0.2s, transform 0.1s;
       margin-bottom: 40px;
     }
 
-    .upload-btn:hover:not(:disabled) {
-      box-shadow: 0 0 30px rgba(0,255,136,0.4);
-      transform: translateY(-1px);
-    }
+    .upload-btn:hover:not(:disabled) { box-shadow: 0 0 30px rgba(0,255,136,0.4); transform: translateY(-1px); }
+    .upload-btn:disabled { background: var(--muted); cursor: not-allowed; color: #333; }
 
-    .upload-btn:disabled {
-      background: var(--muted);
-      cursor: not-allowed;
-      color: #333;
-    }
-
-    /* ── Progress ── */
-    .progress-wrap {
-      margin-bottom: 40px;
-      display: none;
-    }
-
+    .progress-wrap { margin-bottom: 40px; display: none; }
     .progress-wrap.active { display: block; }
 
-    .progress-label {
-      font-size: 11px;
-      color: var(--muted);
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      margin-bottom: 8px;
-    }
-
+    .progress-label { font-size: 11px; color: var(--muted); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 8px; }
     .progress-label span { color: var(--accent); }
 
-    .progress-bar-track {
-      height: 3px;
-      background: var(--border);
-      position: relative;
-      overflow: hidden;
-    }
-
+    .progress-bar-track { height: 3px; background: var(--border); overflow: hidden; }
     .progress-bar-fill {
-      height: 100%;
-      background: linear-gradient(90deg, var(--accent), var(--accent2));
-      width: 0%;
-      transition: width 0.3s ease;
+      height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2));
+      width: 0%; transition: width 0.3s ease;
       box-shadow: 0 0 12px rgba(0,255,136,0.6);
     }
 
-    /* ── Results ── */
     .results { display: flex; flex-direction: column; gap: 10px; margin-bottom: 48px; }
 
-    .result-card {
-      border: 1px solid var(--border);
-      background: var(--surface);
-      padding: 16px;
-      animation: slideIn 0.25s ease;
-    }
-
+    .result-card { border: 1px solid var(--border); background: var(--surface); padding: 16px; animation: slideIn 0.25s ease; }
     .result-card.success { border-left: 3px solid var(--accent); }
     .result-card.error   { border-left: 3px solid var(--danger); }
 
-    .result-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 12px;
-    }
-
+    .result-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
     .result-icon { font-size: 16px; }
+    .result-name { flex: 1; font-size: 12px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    .result-name {
-      flex: 1;
-      font-size: 12px;
-      color: var(--text);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
+    .result-badge { font-size: 10px; padding: 3px 8px; letter-spacing: 0.1em; text-transform: uppercase; border: 1px solid; }
+    .result-badge.ok  { color: var(--accent); border-color: var(--accent); }
+    .result-badge.err { color: var(--danger);  border-color: var(--danger); }
 
-    .result-badge {
-      font-size: 10px;
-      padding: 3px 8px;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      border: 1px solid;
-    }
-
-    .result-badge.ok  { color: var(--accent);  border-color: var(--accent);  }
-    .result-badge.err { color: var(--danger);   border-color: var(--danger);  }
-
-    .result-url-wrap {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
+    .result-url-wrap { display: flex; gap: 8px; align-items: center; }
 
     .result-url {
-      flex: 1;
-      background: rgba(0,0,0,0.4);
-      border: 1px solid var(--border);
-      padding: 8px 12px;
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--accent2);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      cursor: text;
-      user-select: all;
+      flex: 1; background: rgba(0,0,0,0.4); border: 1px solid var(--border);
+      padding: 8px 12px; font-family: var(--font-mono); font-size: 11px;
+      color: var(--accent2); white-space: nowrap; overflow: hidden;
+      text-overflow: ellipsis; cursor: text; user-select: all;
     }
 
     .copy-btn {
-      background: none;
-      border: 1px solid var(--accent);
-      color: var(--accent);
-      font-family: var(--font-mono);
-      font-size: 11px;
-      padding: 8px 14px;
-      cursor: pointer;
-      letter-spacing: 0.1em;
-      transition: background 0.15s;
-      white-space: nowrap;
-      flex-shrink: 0;
+      background: none; border: 1px solid var(--accent); color: var(--accent);
+      font-family: var(--font-mono); font-size: 11px; padding: 8px 14px;
+      cursor: pointer; letter-spacing: 0.1em; transition: background 0.15s;
+      white-space: nowrap; flex-shrink: 0;
     }
     .copy-btn:hover { background: rgba(0,255,136,0.1); }
     .copy-btn.copied { color: var(--accent2); border-color: var(--accent2); }
 
-    .result-meta {
-      display: flex;
-      gap: 16px;
-      margin-top: 10px;
-      font-size: 10px;
-      color: var(--muted);
-      letter-spacing: 0.08em;
-      flex-wrap: wrap;
-    }
-
+    .result-meta { display: flex; gap: 16px; margin-top: 10px; font-size: 10px; color: var(--muted); letter-spacing: 0.08em; flex-wrap: wrap; }
     .result-meta span { color: var(--text); }
 
-    /* ── Delete token ── */
-    .delete-token-wrap {
-      margin-top: 8px;
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-
-    .token-label {
-      font-size: 10px;
-      color: var(--muted);
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      white-space: nowrap;
-    }
+    .delete-token-wrap { margin-top: 8px; display: flex; gap: 8px; align-items: center; }
+    .token-label { font-size: 10px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap; }
 
     .token-val {
-      flex: 1;
-      background: rgba(255,51,85,0.05);
-      border: 1px solid rgba(255,51,85,0.2);
-      padding: 6px 10px;
-      font-family: var(--font-mono);
-      font-size: 10px;
-      color: var(--danger);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      cursor: text;
-      user-select: all;
+      flex: 1; background: rgba(255,51,85,0.05); border: 1px solid rgba(255,51,85,0.2);
+      padding: 6px 10px; font-family: var(--font-mono); font-size: 10px; color: var(--danger);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: text; user-select: all;
     }
 
     .copy-token-btn {
-      background: none;
-      border: 1px solid rgba(255,51,85,0.3);
-      color: var(--danger);
-      font-family: var(--font-mono);
-      font-size: 10px;
-      padding: 6px 10px;
-      cursor: pointer;
-      transition: background 0.15s;
-      white-space: nowrap;
-      flex-shrink: 0;
+      background: none; border: 1px solid rgba(255,51,85,0.3); color: var(--danger);
+      font-family: var(--font-mono); font-size: 10px; padding: 6px 10px;
+      cursor: pointer; transition: background 0.15s; white-space: nowrap; flex-shrink: 0;
     }
     .copy-token-btn:hover { background: rgba(255,51,85,0.08); }
 
-    /* ── Recent uploads ── */
     .section-title {
-      font-family: var(--font-display);
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.2em;
-      color: var(--muted);
-      text-transform: uppercase;
-      margin-bottom: 16px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid var(--border);
+      font-family: var(--font-display); font-size: 11px; font-weight: 700;
+      letter-spacing: 0.2em; color: var(--muted); text-transform: uppercase;
+      margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border);
     }
-
     .section-title::before { content: '// '; color: var(--accent); }
 
-    .recent-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 10px;
-    }
+    .recent-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
 
     .recent-card {
-      border: 1px solid var(--border);
-      background: var(--surface);
-      overflow: hidden;
-      transition: border-color 0.2s;
-      cursor: pointer;
-      text-decoration: none;
-      display: block;
+      border: 1px solid var(--border); background: var(--surface);
+      overflow: hidden; transition: border-color 0.2s;
+      cursor: pointer; text-decoration: none; display: block;
     }
-
     .recent-card:hover { border-color: var(--accent); }
 
-    .recent-thumb {
-      width: 100%;
-      height: 120px;
-      object-fit: cover;
-      display: block;
-      background: var(--bg);
-    }
-
-    .recent-thumb-placeholder {
-      width: 100%;
-      height: 120px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 36px;
-      background: rgba(0,0,0,0.3);
-    }
-
-    .recent-info {
-      padding: 10px 12px;
-      border-top: 1px solid var(--border);
-    }
-
-    .recent-name {
-      font-size: 11px;
-      color: var(--text);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      margin-bottom: 4px;
-    }
-
-    .recent-meta {
-      font-size: 10px;
-      color: var(--muted);
-      display: flex;
-      justify-content: space-between;
-    }
-
+    .recent-thumb { width: 100%; height: 120px; object-fit: cover; display: block; background: var(--bg); }
+    .recent-thumb-placeholder { width: 100%; height: 120px; display: flex; align-items: center; justify-content: center; font-size: 36px; background: rgba(0,0,0,0.3); }
+    .recent-info { padding: 10px 12px; border-top: 1px solid var(--border); }
+    .recent-name { font-size: 11px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
+    .recent-meta { font-size: 10px; color: var(--muted); display: flex; justify-content: space-between; }
     .recent-views { color: var(--accent2); }
 
-    /* ── Footer ── */
     footer {
-      margin-top: 64px;
-      padding-top: 24px;
-      border-top: 1px solid var(--border);
-      font-size: 11px;
-      color: var(--muted);
-      letter-spacing: 0.1em;
-      display: flex;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 8px;
+      margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--border);
+      font-size: 11px; color: var(--muted); letter-spacing: 0.1em;
+      display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
     }
-
     footer a { color: var(--accent); text-decoration: none; }
     footer a:hover { text-decoration: underline; }
 
-    /* ── Toast ── */
     .toast {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      background: var(--surface);
-      border: 1px solid var(--accent);
-      color: var(--accent);
-      font-family: var(--font-mono);
-      font-size: 12px;
-      padding: 12px 20px;
-      letter-spacing: 0.1em;
-      z-index: 10000;
-      box-shadow: 0 0 30px rgba(0,255,136,0.2);
-      animation: toastIn 0.2s ease;
-      max-width: 300px;
+      position: fixed; bottom: 24px; right: 24px;
+      background: var(--surface); border: 1px solid var(--accent);
+      color: var(--accent); font-family: var(--font-mono);
+      font-size: 12px; padding: 12px 20px; letter-spacing: 0.1em;
+      z-index: 10000; box-shadow: 0 0 30px rgba(0,255,136,0.2);
+      animation: slideIn 0.2s ease; max-width: 300px;
     }
-
     .toast.error { border-color: var(--danger); color: var(--danger); box-shadow: 0 0 30px rgba(255,51,85,0.2); }
 
-    @keyframes toastIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    /* ── Cursor blink ── */
-    .blink {
-      animation: blink 1s step-end infinite;
-      color: var(--accent);
-    }
+    .blink { animation: blink 1s step-end infinite; color: var(--accent); }
     @keyframes blink { 50% { opacity: 0; } }
 
-    /* ── Responsive ── */
     @media (max-width: 540px) {
       .stats-bar { gap: 16px; }
       .result-url-wrap { flex-direction: column; }
       .result-url { width: 100%; }
       .recent-grid { grid-template-columns: repeat(2, 1fr); }
+      .terms-btn-row { flex-direction: column; }
     }
   </style>
 </head>
 <body>
-<div class="wrap">
 
-  <!-- Header -->
+<!-- ══ BOOT SCREEN ══ -->
+<div id="bootScreen">
+  <div class="boot-logo">TRASH<span>CORE</span></div>
+  <div class="boot-subtitle">Media Hosting System v2.0 — Initializing<span class="blink">_</span></div>
+
+  <div class="boot-terminal" id="bootTerminal"></div>
+
+  <div class="boot-progress-wrap">
+    <div class="boot-progress-label">
+      System Load &nbsp;<span id="bootPct">0%</span>
+    </div>
+    <div class="boot-bar-track">
+      <div class="boot-bar-fill" id="bootFill"></div>
+    </div>
+    <div class="boot-status" id="bootStatus">Initializing core modules...</div>
+  </div>
+</div>
+
+<!-- ══ TERMS SCREEN ══ -->
+<div id="termsScreen">
+  <div class="terms-box">
+    <div class="terms-header">
+      <span class="terms-header-icon">⚠</span>
+      <div>
+        <div class="terms-header-title">Terms of Service</div>
+        <div class="terms-header-sub">Read carefully before proceeding</div>
+      </div>
+    </div>
+    <div class="terms-body">
+      <h4>1. Acceptance</h4>
+      <p>By using Trashcore Media Host you agree to these terms. If you disagree, do not use this service.</p>
+
+      <h4>2. Permitted Content</h4>
+      <p>You may upload images, videos, and audio files for personal or public sharing. You must own or have rights to all content you upload.</p>
+
+      <h4>3. Prohibited Content</h4>
+      <ul>
+        <li class="warn-text">No illegal content of any kind</li>
+        <li class="warn-text">No CSAM or exploitation material</li>
+        <li class="warn-text">No malware, exploits, or harmful files</li>
+        <li>No copyrighted content without permission</li>
+        <li>No content that violates third-party rights</li>
+      </ul>
+
+      <h4>4. File Limits</h4>
+      <p>Maximum file size is <strong>50MB</strong> per file. Up to 10 files per upload. Supported: images, videos, and audio only.</p>
+
+      <h4>5. Storage & Deletion</h4>
+      <p>Files may be removed at any time without notice. Save your delete tokens — they are the only way to remove your files. Trashcore is not liable for lost data.</p>
+
+      <h4>6. Privacy</h4>
+      <p>Your IP address is logged for abuse prevention. Uploaded files with public URLs are accessible to anyone with the link.</p>
+
+      <h4>7. Liability</h4>
+      <p>Trashcore is provided as-is with no warranties. We are not responsible for content uploaded by users. Violations may result in immediate removal and a ban.</p>
+
+      <h4>8. Changes</h4>
+      <p>These terms may change at any time. Continued use constitutes acceptance of the updated terms.</p>
+    </div>
+    <div class="terms-footer">
+      <label class="terms-checkbox-row">
+        <input type="checkbox" id="termsCheck" onchange="onTermsCheck()" />
+        I have read and agree to the Trashcore Terms of Service. I confirm I will not upload illegal or prohibited content.
+      </label>
+      <div class="terms-btn-row">
+        <button class="terms-agree-btn" id="agreeBtn" disabled onclick="agreeTerms()">✓ &nbsp;AGREE &amp; CONTINUE</button>
+        <button class="terms-decline-btn" onclick="declineTerms()">DECLINE</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MAIN APP ══ -->
+<div id="app">
+<div class="wrap">
   <header>
     <div class="logo">TRASH<span>CORE</span></div>
     <div class="tagline">fast. anonymous. permanent media hosting<span class="blink">_</span></div>
   </header>
 
-  <!-- Stats -->
-  <div class="stats-bar" id="statsBar">
+  <div class="stats-bar">
     <div class="stat-item"><div class="stat-val" id="statFiles">—</div><div class="stat-label">Files Hosted</div></div>
     <div class="stat-item"><div class="stat-val" id="statSize">—</div><div class="stat-label">Total Size</div></div>
     <div class="stat-item"><div class="stat-val" id="statViews">—</div><div class="stat-label">Total Views</div></div>
     <div class="stat-item"><div class="stat-val" id="statMax">—</div><div class="stat-label">Max File Size</div></div>
   </div>
 
-  <!-- Drop Zone -->
   <div class="drop-zone" id="dropZone">
     <input type="file" id="fileInput" multiple accept="image/*,video/*,audio/*" />
     <span class="drop-icon">⬡</span>
     <div class="drop-title">Drop files here or click to browse</div>
-    <div class="drop-sub">
-      Images · Videos · Audio &nbsp;|&nbsp; Max <span id="maxSizeLabel">200MB</span> per file
-    </div>
+    <div class="drop-sub">Images · Videos · Audio &nbsp;|&nbsp; Max <span id="maxSizeLabel">50MB</span> per file</div>
   </div>
 
-  <!-- File Queue -->
   <div class="queue" id="queue"></div>
-
-  <!-- Upload Button -->
   <button class="upload-btn" id="uploadBtn" disabled>⬆ UPLOAD FILES</button>
 
-  <!-- Progress -->
   <div class="progress-wrap" id="progressWrap">
     <div class="progress-label">Uploading<span class="blink">_</span> <span id="progressPct">0%</span></div>
     <div class="progress-bar-track"><div class="progress-bar-fill" id="progressFill"></div></div>
   </div>
 
-  <!-- Results -->
   <div class="results" id="results"></div>
 
-  <!-- Recent Uploads -->
   <div id="recentSection" style="display:none">
     <div class="section-title">Recent Uploads</div>
     <div class="recent-grid" id="recentGrid"></div>
   </div>
 
   <footer>
-    <span>TRASHCORE MEDIA HOST &copy; 2025</span>
-    <span>Built on <a href="https://supabase.com" target="_blank">Supabase</a></span>
+    <span>TRASHCORE MEDIA HOST &copy; 2025 — Created by <a href="https://github.com/Tennor-modz" target="_blank">Trashcore</a></span>
+    <span>v2.0.0</span>
   </footer>
+</div>
 </div>
 
 <script>
   const API = 'https://uploaderv2-yqp1.onrender.com';
+  const MAX_FILE_MB = 50;
+  const MAX_FILE_BYTES = MAX_FILE_MB * 1024 * 1024;
 
+  // ══════════════════════════════════════════
+  // BOOT SEQUENCE
+  // ══════════════════════════════════════════
+  const bootLines = [
+    { delay: 0,    prompt: '[SYS]',  text: 'TRASHCORE Media Host v2.0 starting up...', status: 'ok' },
+    { delay: 800,  prompt: '[INIT]', text: 'Loading core modules', status: 'ok' },
+    { delay: 1500, prompt: '[NET]',  text: 'Establishing API connection', status: 'ok' },
+    { delay: 2200, prompt: '[DB]',   text: 'Connecting to database cluster', status: 'ok' },
+    { delay: 3000, prompt: '[STG]',  text: 'Mounting storage buckets', status: 'ok' },
+    { delay: 3700, prompt: '[AUTH]', text: 'Verifying service keys', status: 'ok' },
+    { delay: 4400, prompt: '[CDN]',  text: 'Warming up CDN nodes', status: 'ok' },
+    { delay: 5100, prompt: '[SEC]',  text: 'Loading security filters', status: 'ok' },
+    { delay: 5800, prompt: '[MIME]', text: 'Registering MIME type handlers', status: 'ok' },
+    { delay: 6500, prompt: '[UPL]',  text: 'Initializing upload pipeline', status: 'ok' },
+    { delay: 7200, prompt: '[RTE]',  text: 'Registering API routes', status: 'ok' },
+    { delay: 7900, prompt: '[CORS]', text: 'Applying CORS policy', status: 'ok' },
+    { delay: 8600, prompt: '[GEN]',  text: 'Seeding short-ID generator', status: 'ok' },
+    { delay: 9300, prompt: '[STRM]', text: 'Configuring file stream proxy', status: 'ok' },
+    { delay: 10000, prompt: '[IDX]', text: 'Building file index', status: 'ok' },
+    { delay: 10700, prompt: '[LOG]', text: 'Starting access logger', status: 'ok' },
+    { delay: 11400, prompt: '[MON]', text: 'Attaching health monitor', status: 'ok' },
+    { delay: 12100, prompt: '[ENV]', text: 'Reading environment config', status: 'ok' },
+    { delay: 12800, prompt: '[UI]',  text: 'Rendering interface components', status: 'ok' },
+    { delay: 13500, prompt: '[RDY]', text: 'All systems operational', status: 'ok' },
+    { delay: 14200, prompt: '[INF]', text: 'Max upload size: 50MB per file', status: 'warn' },
+    { delay: 14900, prompt: '[INF]', text: 'Supported: images · videos · audio', status: 'warn' },
+    { delay: 15600, prompt: '[SEC]', text: 'Enforcing terms of service gate', status: 'ok' },
+    { delay: 16200, prompt: '[SYS]', text: 'Welcome to TRASHCORE. Loading TOS...', status: 'ok' },
+  ];
+
+  const progressSteps = [
+    { at: 0,     pct: 0,   label: 'Initializing core modules...' },
+    { at: 2000,  pct: 10,  label: 'Connecting to API...' },
+    { at: 4000,  pct: 25,  label: 'Mounting storage...' },
+    { at: 6000,  pct: 40,  label: 'Loading security modules...' },
+    { at: 8000,  pct: 55,  label: 'Configuring upload pipeline...' },
+    { at: 10000, pct: 68,  label: 'Building file index...' },
+    { at: 12000, pct: 80,  label: 'Rendering interface...' },
+    { at: 14000, pct: 92,  label: 'Finalizing boot sequence...' },
+    { at: 16500, pct: 100, label: 'Boot complete.' },
+  ];
+
+  const terminal = document.getElementById('bootTerminal');
+  const bootFill = document.getElementById('bootFill');
+  const bootPct  = document.getElementById('bootPct');
+  const bootStatus = document.getElementById('bootStatus');
+
+  // Render terminal lines
+  bootLines.forEach(line => {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'boot-line';
+      el.style.animationDelay = '0s';
+      const statusEl = line.status === 'ok'
+        ? `<span class="ok">[ OK ]</span>`
+        : `<span class="warn">[ !! ]</span>`;
+      el.innerHTML = `<span class="prompt">${line.prompt}</span><span class="txt">${line.text}</span>${statusEl}`;
+      terminal.appendChild(el);
+      terminal.scrollTop = terminal.scrollHeight;
+    }, line.delay);
+  });
+
+  // Progress bar
+  progressSteps.forEach(step => {
+    setTimeout(() => {
+      bootFill.style.width = step.pct + '%';
+      bootPct.textContent = step.pct + '%';
+      bootStatus.textContent = step.label;
+    }, step.at);
+  });
+
+  // After ~17s show terms
+  setTimeout(() => {
+    const bootScreen = document.getElementById('bootScreen');
+    bootScreen.classList.add('fade-out');
+    setTimeout(() => {
+      bootScreen.style.display = 'none';
+      document.getElementById('termsScreen').classList.add('visible');
+    }, 800);
+  }, 17000);
+
+  // ══════════════════════════════════════════
+  // TERMS
+  // ══════════════════════════════════════════
+  function onTermsCheck() {
+    document.getElementById('agreeBtn').disabled = !document.getElementById('termsCheck').checked;
+  }
+
+  function agreeTerms() {
+    document.getElementById('termsScreen').style.display = 'none';
+    document.getElementById('app').classList.add('visible');
+    loadStats();
+    loadRecent();
+  }
+
+  function declineTerms() {
+    document.getElementById('termsScreen').innerHTML = `
+      <div style="text-align:center; font-family:var(--font-mono); color:var(--muted); padding:40px;">
+        <div style="font-family:var(--font-display);font-size:32px;color:var(--danger);margin-bottom:16px;">ACCESS DENIED</div>
+        <div style="font-size:12px;letter-spacing:0.15em;">You must agree to the terms to use Trashcore.</div>
+        <div style="margin-top:24px;">
+          <button onclick="location.reload()" style="background:none;border:1px solid var(--accent);color:var(--accent);font-family:var(--font-mono);font-size:12px;padding:10px 24px;cursor:pointer;letter-spacing:0.1em;">↺ RESTART</button>
+        </div>
+      </div>`;
+  }
+
+  // ══════════════════════════════════════════
+  // MAIN APP
+  // ══════════════════════════════════════════
   const dropZone   = document.getElementById('dropZone');
   const fileInput  = document.getElementById('fileInput');
   const queueEl    = document.getElementById('queue');
@@ -614,7 +849,6 @@
 
   let fileQueue = [];
 
-  // ── Stats ──────────────────────────────────────────────────────────────────
   async function loadStats() {
     try {
       const r = await fetch(`${API}/stats`);
@@ -626,76 +860,46 @@
       document.getElementById('statViews').textContent = stats.totalViews.toLocaleString();
       document.getElementById('statMax').textContent   = stats.maxFileSizeMB + ' MB';
       document.getElementById('maxSizeLabel').textContent = stats.maxFileSizeMB + 'MB';
-    } catch (e) {
-      console.warn('Stats unavailable');
-    }
+    } catch (e) { console.warn('Stats unavailable'); }
   }
 
-  // ── Recent ─────────────────────────────────────────────────────────────────
   async function loadRecent() {
     try {
       const r = await fetch(`${API}/recent`);
       const { files } = await r.json();
       if (!files || files.length === 0) return;
-
       document.getElementById('recentSection').style.display = 'block';
       const grid = document.getElementById('recentGrid');
       grid.innerHTML = '';
-
       files.forEach(f => {
         const card = document.createElement('a');
         card.className = 'recent-card';
         card.href = f.url;
         card.target = '_blank';
-
         const isImage = f.mimetype && f.mimetype.startsWith('image/');
         const isVideo = f.mimetype && f.mimetype.startsWith('video/');
         const isAudio = f.mimetype && f.mimetype.startsWith('audio/');
-
         const thumb = isImage
           ? `<img class="recent-thumb" src="${f.url}" loading="lazy" alt="${f.original_name}" />`
           : `<div class="recent-thumb-placeholder">${isVideo ? '🎬' : isAudio ? '🎵' : '📁'}</div>`;
-
-        const size = f.size ? formatBytes(f.size) : '—';
-        const ago  = timeAgo(f.uploaded_at);
-
-        card.innerHTML = `
-          ${thumb}
+        card.innerHTML = `${thumb}
           <div class="recent-info">
             <div class="recent-name">${f.original_name || f.filename}</div>
-            <div class="recent-meta">
-              <span>${ago}</span>
-              <span class="recent-views">👁 ${f.views || 0}</span>
-            </div>
+            <div class="recent-meta"><span>${timeAgo(f.uploaded_at)}</span><span class="recent-views">👁 ${f.views || 0}</span></div>
           </div>`;
         grid.appendChild(card);
       });
-    } catch (e) {
-      console.warn('Recent unavailable');
-    }
+    } catch (e) { console.warn('Recent unavailable'); }
   }
 
-  // ── Drag & Drop ────────────────────────────────────────────────────────────
-  dropZone.addEventListener('dragover', e => {
-    e.preventDefault();
-    dropZone.classList.add('drag-over');
-  });
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
   dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
-  dropZone.addEventListener('drop', e => {
-    e.preventDefault();
-    dropZone.classList.remove('drag-over');
-    addFiles([...e.dataTransfer.files]);
-  });
-  fileInput.addEventListener('change', () => {
-    addFiles([...fileInput.files]);
-    fileInput.value = '';
-  });
+  dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('drag-over'); addFiles([...e.dataTransfer.files]); });
+  fileInput.addEventListener('change', () => { addFiles([...fileInput.files]); fileInput.value = ''; });
 
   function addFiles(files) {
     files.forEach(f => {
-      if (!fileQueue.find(q => q.name === f.name && q.size === f.size)) {
-        fileQueue.push(f);
-      }
+      if (!fileQueue.find(q => q.name === f.name && q.size === f.size)) fileQueue.push(f);
     });
     renderQueue();
   }
@@ -703,31 +907,33 @@
   function renderQueue() {
     queueEl.innerHTML = '';
     fileQueue.forEach((f, i) => {
+      const overSize = f.size > MAX_FILE_BYTES;
       const item = document.createElement('div');
-      item.className = 'queue-item';
+      item.className = 'queue-item' + (overSize ? ' too-large' : '');
       item.innerHTML = `
         <div class="queue-type">${typeIcon(f.type)}</div>
         <div class="queue-info">
           <div class="queue-name">${f.name}</div>
-          <div class="queue-size">${formatBytes(f.size)}</div>
+          <div class="queue-size ${overSize ? 'over' : ''}">${formatBytes(f.size)}${overSize ? ` — exceeds ${MAX_FILE_MB}MB limit` : ''}</div>
         </div>
         <button class="queue-remove" data-idx="${i}">✕</button>`;
       queueEl.appendChild(item);
     });
 
     queueEl.querySelectorAll('.queue-remove').forEach(btn => {
-      btn.addEventListener('click', () => {
-        fileQueue.splice(parseInt(btn.dataset.idx), 1);
-        renderQueue();
-      });
+      btn.addEventListener('click', () => { fileQueue.splice(parseInt(btn.dataset.idx), 1); renderQueue(); });
     });
 
-    uploadBtn.disabled = fileQueue.length === 0;
+    const hasValid = fileQueue.some(f => f.size <= MAX_FILE_BYTES);
+    uploadBtn.disabled = fileQueue.length === 0 || !hasValid;
   }
 
-  // ── Upload ─────────────────────────────────────────────────────────────────
   uploadBtn.addEventListener('click', async () => {
-    if (fileQueue.length === 0) return;
+    const validFiles = fileQueue.filter(f => f.size <= MAX_FILE_BYTES);
+    const skipped = fileQueue.length - validFiles.length;
+
+    if (validFiles.length === 0) return;
+    if (skipped > 0) toast(`⚠ Skipping ${skipped} oversized file${skipped > 1 ? 's' : ''}`, true);
 
     uploadBtn.disabled = true;
     resultsEl.innerHTML = '';
@@ -735,7 +941,7 @@
     setProgress(0);
 
     const formData = new FormData();
-    fileQueue.forEach(f => formData.append('files', f));
+    validFiles.forEach(f => formData.append('files', f));
 
     try {
       const xhr = new XMLHttpRequest();
@@ -750,7 +956,7 @@
         try {
           const data = JSON.parse(xhr.responseText);
           if (data.success) {
-            data.files.forEach(f => renderResult(f, true));
+            data.files.forEach(f => renderResult(f));
             toast(`✓ ${data.files.length} file${data.files.length > 1 ? 's' : ''} uploaded`);
             fileQueue = [];
             renderQueue();
@@ -760,9 +966,7 @@
             renderError(data.error || 'Upload failed');
             toast(data.error || 'Upload failed', true);
           }
-        } catch {
-          renderError('Invalid server response');
-        }
+        } catch { renderError('Invalid server response'); }
         uploadBtn.disabled = false;
       };
 
@@ -786,9 +990,9 @@
     progressPct.textContent = pct + '%';
   }
 
-  function renderResult(f, success) {
+  function renderResult(f) {
     const card = document.createElement('div');
-    card.className = `result-card ${success ? 'success' : 'error'}`;
+    card.className = 'result-card success';
     card.innerHTML = `
       <div class="result-header">
         <span class="result-icon">${typeIcon(f.mimetype)}</span>
@@ -796,8 +1000,8 @@
         <span class="result-badge ok">UPLOADED</span>
       </div>
       <div class="result-url-wrap">
-        <div class="result-url" id="url-${f.id}">${f.url}</div>
-        <button class="copy-btn" onclick="copyUrl('${f.id}', '${f.url}', this)">COPY</button>
+        <div class="result-url">${f.url}</div>
+        <button class="copy-btn" onclick="copyText('${f.url}', this)">COPY</button>
       </div>
       <div class="result-meta">
         <div>SIZE: <span>${formatBytes(f.size)}</span></div>
@@ -824,24 +1028,15 @@
     resultsEl.prepend(card);
   }
 
-  // ── Copy helpers ───────────────────────────────────────────────────────────
-  function copyUrl(id, url, btn) {
-    navigator.clipboard.writeText(url).then(() => {
-      btn.textContent = 'COPIED!';
-      btn.classList.add('copied');
-      setTimeout(() => { btn.textContent = 'COPY'; btn.classList.remove('copied'); }, 2000);
-    });
-  }
-
   function copyText(text, btn) {
     navigator.clipboard.writeText(text).then(() => {
       const orig = btn.textContent;
-      btn.textContent = 'SAVED!';
-      setTimeout(() => btn.textContent = orig, 2000);
+      btn.textContent = 'COPIED!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 2000);
     });
   }
 
-  // ── Toast ──────────────────────────────────────────────────────────────────
   function toast(msg, isError = false) {
     const el = document.createElement('div');
     el.className = 'toast' + (isError ? ' error' : '');
@@ -850,7 +1045,6 @@
     setTimeout(() => el.remove(), 3000);
   }
 
-  // ── Helpers ────────────────────────────────────────────────────────────────
   function formatBytes(b) {
     if (!b) return '0 B';
     if (b < 1024) return b + ' B';
@@ -876,10 +1070,6 @@
     if (mime.startsWith('audio/')) return '🎵';
     return '📁';
   }
-
-  // ── Init ───────────────────────────────────────────────────────────────────
-  loadStats();
-  loadRecent();
 </script>
 </body>
 </html>
