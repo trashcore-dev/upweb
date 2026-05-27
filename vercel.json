@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/f/:filename", "destination": "https://uploaderv2-yqp1.onrender.com/f/:filename" }
+  ]
+}
