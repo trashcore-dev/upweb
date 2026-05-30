@@ -10,16 +10,84 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #080808;
-      --surface: #0f0f0f;
-      --border: #1e1e1e;
-      --accent: #00ff88;
+      --bg: #04080f;
+      --surface: #080f1a;
+      --border: #0d1e33;
+      --accent: #0088ff;
       --accent2: #00ccff;
       --danger: #ff3355;
-      --text: #e0e0e0;
-      --muted: #555;
+      --text: #d0e4ff;
+      --muted: #3a5a7a;
       --font-mono: 'Share Tech Mono', monospace;
       --font-display: 'Orbitron', sans-serif;
+    }
+
+    /* ══ LIGHT MODE ══ */
+    [data-theme="light"] {
+      --bg: #eef4ff;
+      --surface: #ffffff;
+      --border: #b8d0ee;
+      --accent: #005fcc;
+      --accent2: #0099bb;
+      --danger: #d4002e;
+      --text: #091830;
+      --muted: #6688aa;
+    }
+
+    [data-theme="light"] body::before {
+      background: repeating-linear-gradient(
+        0deg, transparent, transparent 2px,
+        rgba(0,95,204,0.025) 2px, rgba(0,95,204,0.025) 4px
+      );
+    }
+
+    [data-theme="light"] body::after {
+      background-image:
+        linear-gradient(rgba(0,95,204,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,95,204,0.06) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    [data-theme="light"] .nav-overlay { background: rgba(200,220,245,0.7); }
+    [data-theme="light"] .modal-backdrop { background: rgba(180,210,240,0.85); }
+    [data-theme="light"] .result-url { background: rgba(0,0,0,0.04); }
+    [data-theme="light"] .queue-type { background: rgba(0,0,0,0.03); }
+    [data-theme="light"] .recent-thumb-placeholder { background: rgba(0,0,0,0.05); }
+    [data-theme="light"] .ai-msg.bot { background: rgba(0,95,204,0.06); border-color: rgba(0,95,204,0.2); }
+    [data-theme="light"] .token-val { background: rgba(212,0,46,0.04); }
+    [data-theme="light"] .drop-zone { background: rgba(0,95,204,0.03); }
+    [data-theme="light"] .drop-zone:hover, [data-theme="light"] .drop-zone.drag-over { background: rgba(0,95,204,0.07); }
+    [data-theme="light"] .upload-btn:disabled { color: #aaa; }
+
+    /* ══ THEME TOGGLE BUTTON ══ */
+    .theme-toggle-btn {
+      position: fixed;
+      top: 20px;
+      right: 72px;
+      z-index: 6000;
+      background: var(--surface);
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      width: 42px;
+      height: 42px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 18px;
+      box-shadow: 0 0 20px rgba(0,136,255,0.2);
+      transition: box-shadow 0.2s, background 0.15s, transform 0.3s;
+    }
+
+    .theme-toggle-btn:hover {
+      background: rgba(0,136,255,0.1);
+      box-shadow: 0 0 30px rgba(0,136,255,0.4);
+    }
+
+    .theme-toggle-btn.spin { transform: rotate(360deg); }
+
+    @media (max-width: 540px) {
+      .theme-toggle-btn { top: 14px; right: 64px; }
     }
 
     html, body {
@@ -36,7 +104,7 @@
       inset: 0;
       background: repeating-linear-gradient(
         0deg, transparent, transparent 2px,
-        rgba(0,255,136,0.015) 2px, rgba(0,255,136,0.015) 4px
+        rgba(0,136,255,0.012) 2px, rgba(0,136,255,0.012) 4px
       );
       pointer-events: none;
       z-index: 9999;
@@ -47,15 +115,15 @@
       position: fixed;
       inset: 0;
       background-image:
-        linear-gradient(rgba(0,255,136,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,255,136,0.03) 1px, transparent 1px);
+        linear-gradient(rgba(0,136,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,136,255,0.025) 1px, transparent 1px);
       background-size: 40px 40px;
       pointer-events: none;
       z-index: 0;
     }
 
     /* ══════════════════════════════════════════
-       BOOT SCREEN
+       BOOT SCREEN — Spinning Circle
     ══════════════════════════════════════════ */
     #bootScreen {
       position: fixed;
@@ -66,6 +134,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      gap: 32px;
       padding: 24px;
     }
 
@@ -83,8 +152,7 @@
       font-weight: 900;
       letter-spacing: 0.08em;
       color: var(--accent);
-      text-shadow: 0 0 40px rgba(0,255,136,0.5), 0 0 80px rgba(0,255,136,0.2);
-      margin-bottom: 6px;
+      text-shadow: 0 0 40px rgba(0,136,255,0.6), 0 0 80px rgba(0,136,255,0.25);
       animation: glitch 4s infinite;
     }
 
@@ -92,10 +160,10 @@
 
     @keyframes glitch {
       0%, 92%, 100% { transform: none; filter: none; }
-      93%  { transform: skewX(-2deg) translateX(3px); filter: hue-rotate(90deg); }
+      93%  { transform: skewX(-2deg) translateX(3px); filter: hue-rotate(30deg); }
       94%  { transform: skewX(2deg) translateX(-3px); }
       95%  { transform: none; filter: none; }
-      96%  { transform: translateX(2px); filter: hue-rotate(-90deg); }
+      96%  { transform: translateX(2px); filter: hue-rotate(-30deg); }
       97%  { transform: none; filter: none; }
     }
 
@@ -104,78 +172,77 @@
       color: var(--muted);
       letter-spacing: 0.25em;
       text-transform: uppercase;
-      margin-bottom: 48px;
     }
 
-    .boot-terminal {
+    /* Spinner container */
+    .boot-spinner-wrap {
+      position: relative;
+      width: 140px;
+      height: 140px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .boot-spinner-svg {
+      position: absolute;
+      inset: 0;
       width: 100%;
-      max-width: 560px;
-      background: rgba(0,0,0,0.6);
-      border: 1px solid var(--border);
-      padding: 20px 24px;
-      margin-bottom: 32px;
-      min-height: 220px;
-      font-size: 12px;
-      line-height: 1.9;
+      height: 100%;
+      transform: rotate(-90deg);
+      animation: spinRotate 1.4s linear infinite;
+    }
+
+    @keyframes spinRotate {
+      to { transform: rotate(270deg); }
+    }
+
+    .boot-spinner-track {
+      fill: none;
+      stroke: var(--border);
+      stroke-width: 5;
+    }
+
+    .boot-spinner-fill {
+      fill: none;
+      stroke: url(#spinGrad);
+      stroke-width: 5;
+      stroke-linecap: round;
+      stroke-dasharray: 351.86;
+      stroke-dashoffset: 351.86;
+      transition: stroke-dashoffset 0.3s linear;
+      filter: drop-shadow(0 0 8px rgba(0,136,255,0.8));
+    }
+
+    .boot-pct-label {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--accent);
+      text-shadow: 0 0 20px rgba(0,136,255,0.6);
       letter-spacing: 0.05em;
     }
 
-    .boot-line {
-      display: flex;
-      gap: 10px;
-      opacity: 0;
-      animation: lineIn 0.1s ease forwards;
+    .boot-pct-sub {
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-top: 2px;
+      text-align: center;
     }
 
-    @keyframes lineIn {
-      to { opacity: 1; }
-    }
-
-    .boot-line .prompt { color: var(--accent); flex-shrink: 0; }
-    .boot-line .ok     { color: var(--accent); margin-left: auto; flex-shrink: 0; }
-    .boot-line .warn   { color: #ffcc00; margin-left: auto; flex-shrink: 0; }
-    .boot-line .txt    { color: var(--text); flex: 1; }
-    .boot-line .dim    { color: var(--muted); flex: 1; }
-
-    .boot-progress-wrap {
-      width: 100%;
-      max-width: 560px;
-      margin-bottom: 12px;
-    }
-
-    .boot-progress-label {
-      display: flex;
-      justify-content: space-between;
-      font-size: 10px;
+    .boot-status-text {
+      font-size: 11px;
       color: var(--muted);
       letter-spacing: 0.15em;
       text-transform: uppercase;
-      margin-bottom: 8px;
+      text-align: center;
+      max-width: 300px;
+      line-height: 1.6;
     }
 
-    .boot-progress-label span { color: var(--accent); }
-
-    .boot-bar-track {
-      height: 4px;
-      background: var(--border);
-      overflow: hidden;
-    }
-
-    .boot-bar-fill {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, var(--accent), var(--accent2));
-      box-shadow: 0 0 16px rgba(0,255,136,0.6);
-      transition: width 0.2s linear;
-    }
-
-    .boot-status {
-      font-size: 10px;
-      color: var(--muted);
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      margin-top: 10px;
-    }
+    .boot-status-text span { color: var(--accent2); }
 
     /* ══════════════════════════════════════════
        TERMS SCREEN
@@ -206,7 +273,7 @@
       max-width: 580px;
       border: 1px solid var(--accent);
       background: var(--surface);
-      box-shadow: 0 0 60px rgba(0,255,136,0.08);
+      box-shadow: 0 0 60px rgba(0,136,255,0.1);
     }
 
     .terms-header {
@@ -300,7 +367,7 @@
       flex: 1;
       padding: 14px;
       background: var(--accent);
-      color: #000;
+      color: #fff;
       border: none;
       font-family: var(--font-display);
       font-size: 12px;
@@ -318,7 +385,7 @@
     }
 
     .terms-agree-btn:not(:disabled):hover {
-      box-shadow: 0 0 30px rgba(0,255,136,0.4);
+      box-shadow: 0 0 30px rgba(0,136,255,0.5);
       transform: translateY(-1px);
     }
 
@@ -337,6 +404,564 @@
     .terms-decline-btn:hover { background: rgba(255,51,85,0.08); }
 
     /* ══════════════════════════════════════════
+       NAVIGATION MENU
+    ══════════════════════════════════════════ */
+    .nav-menu-btn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 6000;
+      background: var(--surface);
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      width: 42px;
+      height: 42px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      cursor: pointer;
+      box-shadow: 0 0 20px rgba(0,136,255,0.2);
+      transition: box-shadow 0.2s, background 0.15s;
+    }
+
+    .nav-menu-btn:hover {
+      background: rgba(0,136,255,0.1);
+      box-shadow: 0 0 30px rgba(0,136,255,0.4);
+    }
+
+    .nav-menu-btn .bar {
+      width: 18px;
+      height: 2px;
+      background: var(--accent);
+      transition: transform 0.3s, opacity 0.3s;
+    }
+
+    .nav-menu-btn.open .bar:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .nav-menu-btn.open .bar:nth-child(2) { opacity: 0; }
+    .nav-menu-btn.open .bar:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+    .nav-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(4,8,15,0.7);
+      z-index: 5500;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+
+    .nav-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .nav-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 300px;
+      max-width: 90vw;
+      background: var(--surface);
+      border-left: 1px solid var(--accent);
+      z-index: 5800;
+      transform: translateX(100%);
+      transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+      display: flex;
+      flex-direction: column;
+      box-shadow: -10px 0 60px rgba(0,136,255,0.15);
+    }
+
+    .nav-drawer.open {
+      transform: translateX(0);
+    }
+
+    .nav-drawer-header {
+      padding: 24px 20px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-drawer-logo {
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 900;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+    }
+
+    .nav-drawer-logo span { color: var(--accent2); }
+
+    .nav-drawer-sub {
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+
+    .nav-items {
+      flex: 1;
+      padding: 12px 0;
+      overflow-y: auto;
+    }
+
+    .nav-section-label {
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      padding: 12px 20px 6px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 13px 20px;
+      color: var(--text);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.15s, color 0.15s;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+    }
+
+    .nav-item:hover {
+      background: rgba(0,136,255,0.08);
+      color: var(--accent);
+    }
+
+    .nav-item-icon {
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border);
+      font-size: 14px;
+      flex-shrink: 0;
+      transition: border-color 0.15s;
+    }
+
+    .nav-item:hover .nav-item-icon { border-color: var(--accent); }
+
+    .nav-item-text { flex: 1; }
+    .nav-item-name { display: block; margin-bottom: 2px; }
+    .nav-item-desc { display: block; font-size: 10px; color: var(--muted); letter-spacing: 0.05em; }
+
+    .nav-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 8px 20px;
+    }
+
+    .nav-drawer-footer {
+      padding: 16px 20px;
+      border-top: 1px solid var(--border);
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-align: center;
+    }
+
+    /* ══════════════════════════════════════════
+       MODAL (FAQ / POLICY)
+    ══════════════════════════════════════════ */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(4,8,15,0.85);
+      z-index: 9000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+    }
+
+    .modal-backdrop.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal-box {
+      width: 100%;
+      max-width: 600px;
+      max-height: 80vh;
+      background: var(--surface);
+      border: 1px solid var(--accent);
+      box-shadow: 0 0 80px rgba(0,136,255,0.15);
+      display: flex;
+      flex-direction: column;
+      transform: translateY(16px);
+      transition: transform 0.25s;
+    }
+
+    .modal-backdrop.open .modal-box {
+      transform: translateY(0);
+    }
+
+    .modal-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-title {
+      font-family: var(--font-display);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+
+    .modal-close {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 14px;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .modal-close:hover { border-color: var(--danger); color: var(--danger); }
+
+    .modal-body {
+      padding: 20px 24px;
+      overflow-y: auto;
+      font-size: 12px;
+      line-height: 1.9;
+      color: var(--text);
+      flex: 1;
+    }
+
+    .modal-body::-webkit-scrollbar { width: 4px; }
+    .modal-body::-webkit-scrollbar-track { background: var(--bg); }
+    .modal-body::-webkit-scrollbar-thumb { background: var(--border); }
+
+    .faq-item {
+      border-bottom: 1px solid var(--border);
+      padding: 16px 0;
+    }
+
+    .faq-item:first-child { padding-top: 0; }
+    .faq-item:last-child { border-bottom: none; }
+
+    .faq-q {
+      font-family: var(--font-display);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent2);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .faq-q::before { content: 'Q:'; color: var(--accent); flex-shrink: 0; }
+
+    .faq-a {
+      color: var(--text);
+      font-size: 12px;
+      line-height: 1.8;
+      padding-left: 22px;
+    }
+
+    .policy-section h4 {
+      font-family: var(--font-display);
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--accent2);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin: 18px 0 8px;
+    }
+
+    .policy-section h4:first-child { margin-top: 0; }
+    .policy-section p { color: var(--text); margin-bottom: 8px; font-size: 12px; }
+    .policy-section ul { padding-left: 18px; margin-bottom: 8px; }
+    .policy-section li { margin-bottom: 4px; font-size: 12px; color: var(--text); }
+    .policy-section strong { color: var(--accent); }
+    .policy-section .warn { color: var(--danger); }
+
+    /* ══════════════════════════════════════════
+       AI ASSISTANT BUTTON + CHAT PANEL
+    ══════════════════════════════════════════ */
+    .ai-fab {
+      position: fixed;
+      bottom: 28px;
+      right: 24px;
+      z-index: 6000;
+      width: 54px;
+      height: 54px;
+      border-radius: 0;
+      background: var(--accent);
+      border: none;
+      color: #fff;
+      font-size: 22px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 30px rgba(0,136,255,0.5), 0 4px 20px rgba(0,0,0,0.4);
+      transition: box-shadow 0.2s, transform 0.15s;
+      animation: fabPulse 3s ease-in-out infinite;
+    }
+
+    @keyframes fabPulse {
+      0%, 100% { box-shadow: 0 0 30px rgba(0,136,255,0.5), 0 4px 20px rgba(0,0,0,0.4); }
+      50% { box-shadow: 0 0 50px rgba(0,136,255,0.8), 0 4px 20px rgba(0,0,0,0.4); }
+    }
+
+    .ai-fab:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 50px rgba(0,136,255,0.7), 0 6px 24px rgba(0,0,0,0.5);
+    }
+
+    .ai-fab-label {
+      position: absolute;
+      right: 62px;
+      background: var(--surface);
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      padding: 4px 10px;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .ai-fab:hover .ai-fab-label { opacity: 1; }
+
+    .ai-panel {
+      position: fixed;
+      bottom: 90px;
+      right: 24px;
+      z-index: 5900;
+      width: 340px;
+      max-width: calc(100vw - 32px);
+      background: var(--surface);
+      border: 1px solid var(--accent);
+      box-shadow: 0 0 60px rgba(0,136,255,0.2);
+      display: flex;
+      flex-direction: column;
+      max-height: 480px;
+      transform: scale(0.9) translateY(20px);
+      transform-origin: bottom right;
+      opacity: 0;
+      pointer-events: none;
+      transition: transform 0.25s cubic-bezier(0.4,0,0.2,1), opacity 0.25s;
+    }
+
+    .ai-panel.open {
+      transform: scale(1) translateY(0);
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .ai-panel-header {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .ai-panel-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 8px rgba(0,136,255,0.8);
+      animation: dotBlink 1.5s ease-in-out infinite;
+    }
+
+    @keyframes dotBlink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .ai-panel-title {
+      font-family: var(--font-display);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      flex: 1;
+    }
+
+    .ai-panel-close {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 16px;
+      cursor: pointer;
+      padding: 2px 6px;
+      transition: color 0.15s;
+    }
+
+    .ai-panel-close:hover { color: var(--danger); }
+
+    .ai-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .ai-messages::-webkit-scrollbar { width: 3px; }
+    .ai-messages::-webkit-scrollbar-track { background: var(--bg); }
+    .ai-messages::-webkit-scrollbar-thumb { background: var(--border); }
+
+    .ai-msg {
+      max-width: 85%;
+      font-size: 12px;
+      line-height: 1.7;
+      letter-spacing: 0.03em;
+      animation: msgIn 0.2s ease;
+    }
+
+    @keyframes msgIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .ai-msg.bot {
+      align-self: flex-start;
+      background: rgba(0,136,255,0.08);
+      border: 1px solid rgba(0,136,255,0.2);
+      color: var(--text);
+      padding: 10px 13px;
+    }
+
+    .ai-msg.user {
+      align-self: flex-end;
+      background: var(--accent);
+      color: #fff;
+      padding: 10px 13px;
+    }
+
+    .ai-msg-label {
+      font-size: 9px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      opacity: 0.6;
+    }
+
+    .ai-typing {
+      align-self: flex-start;
+      display: flex;
+      gap: 4px;
+      padding: 12px 14px;
+      background: rgba(0,136,255,0.08);
+      border: 1px solid rgba(0,136,255,0.2);
+    }
+
+    .ai-typing span {
+      width: 6px;
+      height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: typingDot 1.2s ease-in-out infinite;
+    }
+
+    .ai-typing span:nth-child(2) { animation-delay: 0.2s; }
+    .ai-typing span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes typingDot {
+      0%, 80%, 100% { transform: scale(1); opacity: 0.5; }
+      40% { transform: scale(1.3); opacity: 1; }
+    }
+
+    .ai-quick-btns {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 0 14px 10px;
+    }
+
+    .ai-quick-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--accent2);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      padding: 5px 10px;
+      cursor: pointer;
+      letter-spacing: 0.05em;
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .ai-quick-btn:hover {
+      border-color: var(--accent2);
+      background: rgba(0,204,255,0.06);
+    }
+
+    .ai-input-row {
+      padding: 12px 14px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 8px;
+    }
+
+    .ai-input {
+      flex: 1;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      padding: 8px 12px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .ai-input:focus { border-color: var(--accent); }
+    .ai-input::placeholder { color: var(--muted); }
+
+    .ai-send-btn {
+      background: var(--accent);
+      border: none;
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      padding: 8px 14px;
+      cursor: pointer;
+      letter-spacing: 0.1em;
+      transition: box-shadow 0.15s;
+    }
+
+    .ai-send-btn:hover { box-shadow: 0 0 20px rgba(0,136,255,0.5); }
+
+    /* ══════════════════════════════════════════
        MAIN APP
     ══════════════════════════════════════════ */
     #app { display: none; }
@@ -347,14 +972,20 @@
       z-index: 1;
       max-width: 860px;
       margin: 0 auto;
-      padding: 0 20px 80px;
+      padding: 0 20px 100px;
     }
 
     header {
       padding: 48px 0 32px;
       border-bottom: 1px solid var(--border);
       margin-bottom: 48px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
     }
+
+    .header-brand {}
 
     .logo {
       font-family: var(--font-display);
@@ -362,7 +993,7 @@
       font-weight: 900;
       letter-spacing: 0.08em;
       color: var(--accent);
-      text-shadow: 0 0 30px rgba(0,255,136,0.4), 0 0 60px rgba(0,255,136,0.15);
+      text-shadow: 0 0 30px rgba(0,136,255,0.5), 0 0 60px rgba(0,136,255,0.2);
       line-height: 1;
     }
 
@@ -397,7 +1028,7 @@
 
     .drop-zone {
       border: 1px dashed var(--accent);
-      background: rgba(0,255,136,0.02);
+      background: rgba(0,136,255,0.02);
       padding: 56px 24px;
       text-align: center;
       cursor: pointer;
@@ -407,8 +1038,8 @@
     }
 
     .drop-zone:hover, .drop-zone.drag-over {
-      background: rgba(0,255,136,0.06);
-      box-shadow: 0 0 40px rgba(0,255,136,0.08), inset 0 0 40px rgba(0,255,136,0.04);
+      background: rgba(0,136,255,0.06);
+      box-shadow: 0 0 40px rgba(0,136,255,0.08), inset 0 0 40px rgba(0,136,255,0.04);
     }
 
     .drop-zone input[type="file"] {
@@ -420,7 +1051,12 @@
       height: 100%;
     }
 
-    .drop-icon { font-size: 42px; margin-bottom: 16px; display: block; filter: drop-shadow(0 0 12px rgba(0,255,136,0.5)); }
+    .drop-icon {
+      font-size: 42px;
+      margin-bottom: 16px;
+      display: block;
+      filter: drop-shadow(0 0 12px rgba(0,136,255,0.6));
+    }
 
     .drop-title {
       font-family: var(--font-display);
@@ -459,7 +1095,7 @@
       width: 36px; height: 36px;
       display: flex; align-items: center; justify-content: center;
       font-size: 18px; flex-shrink: 0;
-      background: rgba(255,255,255,0.03);
+      background: rgba(255,255,255,0.02);
       border: 1px solid var(--border);
     }
 
@@ -478,7 +1114,7 @@
 
     .upload-btn {
       width: 100%; padding: 16px;
-      background: var(--accent); color: #000;
+      background: var(--accent); color: #fff;
       border: none; font-family: var(--font-display);
       font-size: 13px; font-weight: 700;
       letter-spacing: 0.2em; text-transform: uppercase;
@@ -486,7 +1122,7 @@
       margin-bottom: 40px;
     }
 
-    .upload-btn:hover:not(:disabled) { box-shadow: 0 0 30px rgba(0,255,136,0.4); transform: translateY(-1px); }
+    .upload-btn:hover:not(:disabled) { box-shadow: 0 0 30px rgba(0,136,255,0.5); transform: translateY(-1px); }
     .upload-btn:disabled { background: var(--muted); cursor: not-allowed; color: #333; }
 
     .progress-wrap { margin-bottom: 40px; display: none; }
@@ -499,7 +1135,7 @@
     .progress-bar-fill {
       height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2));
       width: 0%; transition: width 0.3s ease;
-      box-shadow: 0 0 12px rgba(0,255,136,0.6);
+      box-shadow: 0 0 12px rgba(0,136,255,0.7);
     }
 
     .results { display: flex; flex-direction: column; gap: 10px; margin-bottom: 48px; }
@@ -531,7 +1167,7 @@
       cursor: pointer; letter-spacing: 0.1em; transition: background 0.15s;
       white-space: nowrap; flex-shrink: 0;
     }
-    .copy-btn:hover { background: rgba(0,255,136,0.1); }
+    .copy-btn:hover { background: rgba(0,136,255,0.1); }
     .copy-btn.copied { color: var(--accent2); border-color: var(--accent2); }
 
     .result-meta { display: flex; gap: 16px; margin-top: 10px; font-size: 10px; color: var(--muted); letter-spacing: 0.08em; flex-wrap: wrap; }
@@ -585,11 +1221,11 @@
     footer a:hover { text-decoration: underline; }
 
     .toast {
-      position: fixed; bottom: 24px; right: 24px;
+      position: fixed; bottom: 24px; left: 24px;
       background: var(--surface); border: 1px solid var(--accent);
       color: var(--accent); font-family: var(--font-mono);
       font-size: 12px; padding: 12px 20px; letter-spacing: 0.1em;
-      z-index: 10000; box-shadow: 0 0 30px rgba(0,255,136,0.2);
+      z-index: 10000; box-shadow: 0 0 30px rgba(0,136,255,0.25);
       animation: slideIn 0.2s ease; max-width: 300px;
     }
     .toast.error { border-color: var(--danger); color: var(--danger); box-shadow: 0 0 30px rgba(255,51,85,0.2); }
@@ -603,26 +1239,38 @@
       .result-url { width: 100%; }
       .recent-grid { grid-template-columns: repeat(2, 1fr); }
       .terms-btn-row { flex-direction: column; }
+      .nav-menu-btn { top: 14px; right: 14px; }
+      .ai-panel { width: calc(100vw - 32px); right: 16px; }
+      .ai-fab { right: 16px; bottom: 20px; }
     }
   </style>
 </head>
 <body>
 
-<!-- ══ BOOT SCREEN ══ -->
+<!-- ══ BOOT SCREEN — Spinner ══ -->
 <div id="bootScreen">
   <div class="boot-logo">TRASH<span>CORE</span></div>
-  <div class="boot-subtitle">Media Hosting System v2.0 — Initializing<span class="blink">_</span></div>
+  <div class="boot-subtitle">Media Hosting System v2.0<span class="blink">_</span></div>
 
-  <div class="boot-terminal" id="bootTerminal"></div>
+  <div class="boot-spinner-wrap">
+    <svg class="boot-spinner-svg" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="spinGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" style="stop-color:#0088ff;" />
+          <stop offset="100%" style="stop-color:#00ccff;" />
+        </linearGradient>
+      </defs>
+      <circle class="boot-spinner-track" cx="60" cy="60" r="56" />
+      <circle class="boot-spinner-fill" id="spinnerArc" cx="60" cy="60" r="56" />
+    </svg>
+    <div style="text-align:center;">
+      <div class="boot-pct-label" id="bootPctLabel">0%</div>
+      <div class="boot-pct-sub">Loading</div>
+    </div>
+  </div>
 
-  <div class="boot-progress-wrap">
-    <div class="boot-progress-label">
-      System Load &nbsp;<span id="bootPct">0%</span>
-    </div>
-    <div class="boot-bar-track">
-      <div class="boot-bar-fill" id="bootFill"></div>
-    </div>
-    <div class="boot-status" id="bootStatus">Initializing core modules...</div>
+  <div class="boot-status-text" id="bootStatusText">
+    Initializing <span>TRASHCORE</span>...
   </div>
 </div>
 
@@ -680,12 +1328,271 @@
   </div>
 </div>
 
+<!-- ══ THEME TOGGLE ══ -->
+<button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()" title="Toggle light/dark mode">🌙</button>
+
+<!-- ══ NAV MENU BUTTON (always visible after boot) ══ -->
+<button class="nav-menu-btn" id="navMenuBtn" style="display:none;" onclick="toggleNav()">
+  <div class="bar"></div>
+  <div class="bar"></div>
+  <div class="bar"></div>
+</button>
+
+<!-- ══ NAV OVERLAY ══ -->
+<div class="nav-overlay" id="navOverlay" onclick="closeNav()"></div>
+
+<!-- ══ NAV DRAWER ══ -->
+<div class="nav-drawer" id="navDrawer">
+  <div class="nav-drawer-header">
+    <div>
+      <div class="nav-drawer-logo">TRASH<span>CORE</span></div>
+      <div class="nav-drawer-sub">Media Hosting System</div>
+    </div>
+  </div>
+  <div class="nav-items">
+    <div class="nav-section-label">Information</div>
+    <button class="nav-item" onclick="openModal('faq'); closeNav();">
+      <div class="nav-item-icon">?</div>
+      <div class="nav-item-text">
+        <span class="nav-item-name">FAQ</span>
+        <span class="nav-item-desc">Frequently asked questions</span>
+      </div>
+    </button>
+    <button class="nav-item" onclick="openModal('policy'); closeNav();">
+      <div class="nav-item-icon">📋</div>
+      <div class="nav-item-text">
+        <span class="nav-item-name">Privacy Policy</span>
+        <span class="nav-item-desc">How we handle your data</span>
+      </div>
+    </button>
+    <button class="nav-item" onclick="openModal('about'); closeNav();">
+      <div class="nav-item-icon">⬡</div>
+      <div class="nav-item-text">
+        <span class="nav-item-name">About</span>
+        <span class="nav-item-desc">What is TRASHCORE?</span>
+      </div>
+    </button>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">Contact & Support</div>
+    <a class="nav-item" href="https://wa.me/254787909276" target="_blank" rel="noopener" onclick="closeNav();">
+      <div class="nav-item-icon">💬</div>
+      <div class="nav-item-text">
+        <span class="nav-item-name">WhatsApp</span>
+        <span class="nav-item-desc">+254 787 909 276</span>
+      </div>
+    </a>
+    <a class="nav-item" href="https://t.me/trashcoredev2" target="_blank" rel="noopener" onclick="closeNav();">
+      <div class="nav-item-icon">✈</div>
+      <div class="nav-item-text">
+        <span class="nav-item-name">Telegram</span>
+        <span class="nav-item-desc">@trashcoredev2</span>
+      </div>
+    </a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">Tools</div>
+    <button class="nav-item" onclick="openModal('delete'); closeNav();">
+      <div class="nav-item-icon">🗑</div>
+      <div class="nav-item-text">
+        <span class="nav-item-name">Delete a File</span>
+        <span class="nav-item-desc">Remove using delete token</span>
+      </div>
+    </button>
+    <button class="nav-item" onclick="toggleAI(); closeNav();">
+      <div class="nav-item-icon">🤖</div>
+      <div class="nav-item-text">
+        <span class="nav-item-name">AI Assistant</span>
+        <span class="nav-item-desc">Ask questions about this site</span>
+      </div>
+    </button>
+    <button class="nav-item" id="themeNavItem" onclick="toggleTheme(); closeNav();">
+      <div class="nav-item-icon" id="themeNavIcon">🌙</div>
+      <div class="nav-item-text">
+        <span class="nav-item-name" id="themeNavLabel">Light Mode</span>
+        <span class="nav-item-desc" id="themeNavDesc">Switch to a brighter theme</span>
+      </div>
+    </button>
+  </div>
+  <div class="nav-drawer-footer">TRASHCORE v2.0 · 2025</div>
+</div>
+
+<!-- ══ FAQ MODAL ══ -->
+<div class="modal-backdrop" id="modal-faq">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title">// FAQ</div>
+      <button class="modal-close" onclick="closeModal('faq')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="faq-item">
+        <div class="faq-q">What is TRASHCORE?</div>
+        <div class="faq-a">TRASHCORE is a fast, anonymous media hosting service. Upload images, videos, and audio — get a permanent public link instantly. No account required.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">How large can my files be?</div>
+        <div class="faq-a">Each file can be up to <strong>50MB</strong>. You can upload up to 10 files in one batch. Supported types: images, videos, and audio.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">How do I delete my file?</div>
+        <div class="faq-a">After uploading, you receive a <strong>delete token</strong>. Save it — it is the only way to delete your file. Use the "Delete a File" tool in the menu and enter your token.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Are uploaded files private?</div>
+        <div class="faq-a">No. All uploaded files are publicly accessible via their URL. Anyone with the link can view the file. Do not upload private or sensitive content.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">How long are files stored?</div>
+        <div class="faq-a">Files may be stored indefinitely, but we reserve the right to remove files at any time without notice — especially those violating our terms.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Is my IP address logged?</div>
+        <div class="faq-a">Yes. Your IP is logged for abuse prevention purposes. This data is not sold or shared with third parties except when legally required.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">What file types are supported?</div>
+        <div class="faq-a">Images (jpg, png, gif, webp, etc.), Videos (mp4, webm, mov, etc.), and Audio (mp3, wav, ogg, etc.). Other file types will be rejected.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">How do I report abuse?</div>
+        <div class="faq-a">Contact us via WhatsApp (+254 787 909 276) or Telegram (@trashcoredev2) with the file URL and reason. We respond as fast as possible.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ POLICY MODAL ══ -->
+<div class="modal-backdrop" id="modal-policy">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title">// Privacy Policy</div>
+      <button class="modal-close" onclick="closeModal('policy')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="policy-section">
+        <h4>Data We Collect</h4>
+        <p>When you use TRASHCORE, the following data may be collected:</p>
+        <ul>
+          <li>Your IP address (for abuse prevention)</li>
+          <li>File metadata (filename, size, type, upload timestamp)</li>
+          <li>View count per file</li>
+          <li>Browser/device type via User-Agent header</li>
+        </ul>
+
+        <h4>How We Use Your Data</h4>
+        <p>Collected data is used solely to:</p>
+        <ul>
+          <li>Operate and maintain the hosting service</li>
+          <li>Detect and prevent abuse, spam, and illegal content</li>
+          <li>Generate aggregate usage statistics</li>
+        </ul>
+
+        <h4>Data Sharing</h4>
+        <p>We do <strong>not</strong> sell your data. We may share data with:</p>
+        <ul>
+          <li>Law enforcement, when required by law</li>
+          <li>Cloud providers that power our infrastructure (processed securely)</li>
+        </ul>
+
+        <h4>Uploaded Content</h4>
+        <p>Files uploaded to TRASHCORE are <strong class="warn">publicly accessible</strong> to anyone with the link. Do not upload private, sensitive, or personally identifiable content.</p>
+
+        <h4>Delete Tokens</h4>
+        <p>Each upload generates a unique delete token. <strong>We do not store delete tokens in recoverable form</strong> — if you lose it, the file cannot be deleted by you. Store it safely.</p>
+
+        <h4>Cookies</h4>
+        <p>TRASHCORE does not use tracking cookies. Your terms acceptance is stored in <code>localStorage</code> on your device only.</p>
+
+        <h4>Your Rights</h4>
+        <p>You may request deletion of your files at any time using your delete token. For other data removal requests, contact us via the channels listed in the menu.</p>
+
+        <h4>Changes</h4>
+        <p>This policy may be updated at any time. Continued use of the service constitutes acceptance of the updated policy.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ABOUT MODAL ══ -->
+<div class="modal-backdrop" id="modal-about">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title">// About TRASHCORE</div>
+      <button class="modal-close" onclick="closeModal('about')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="policy-section">
+        <h4>What is TRASHCORE?</h4>
+        <p>TRASHCORE is a fast, no-nonsense anonymous media hosting platform. No accounts, no sign-ups, no friction. Drop a file, get a link, share it anywhere.</p>
+
+        <h4>Why does it exist?</h4>
+        <p>Most file sharing platforms are cluttered with ads, require registration, or throttle downloads. TRASHCORE strips all of that away — pure upload, pure link.</p>
+
+        <h4>Features</h4>
+        <ul>
+          <li>Anonymous uploads — no account needed</li>
+          <li>Supports images, video, and audio</li>
+          <li>Up to 50MB per file, 10 files per batch</li>
+          <li>Permanent public URLs with view tracking</li>
+          <li>Delete token per upload for self-service removal</li>
+          <li>CDN-backed fast delivery</li>
+        </ul>
+
+        <h4>Built by</h4>
+        <p>TRASHCORE was created by <strong>Trashcore Dev</strong>.</p>
+        <ul>
+          <li>WhatsApp: <strong>+254 787 909 276</strong></li>
+          <li>Telegram: <strong>@trashcoredev2</strong></li>
+          <li>GitHub: <strong>Tennor-modz</strong></li>
+        </ul>
+
+        <h4>Version</h4>
+        <p>TRASHCORE Media Host <strong>v2.0.0</strong> — 2025</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ DELETE FILE MODAL ══ -->
+<div class="modal-backdrop" id="modal-delete">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title">// Delete a File</div>
+      <button class="modal-close" onclick="closeModal('delete')">✕</button>
+    </div>
+    <div class="modal-body" style="padding-bottom: 24px;">
+      <div class="policy-section">
+        <h4>Enter Your Delete Token</h4>
+        <p>Paste the delete token you received after uploading your file. This action is <strong class="warn">permanent and cannot be undone</strong>.</p>
+      </div>
+      <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 12px;">
+        <input
+          type="text"
+          id="deleteTokenInput"
+          placeholder="Paste delete token here..."
+          style="background: rgba(0,0,0,0.4); border: 1px solid var(--border); color: var(--text); font-family: var(--font-mono); font-size: 12px; padding: 12px 16px; outline: none; letter-spacing: 0.05em; width: 100%;"
+          oninput="this.style.borderColor = this.value ? 'var(--danger)' : 'var(--border)'"
+        />
+        <button
+          onclick="doDeleteFile()"
+          style="background: var(--danger); border: none; color: #fff; font-family: var(--font-display); font-size: 12px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; padding: 14px; cursor: pointer; transition: box-shadow 0.2s;"
+          onmouseover="this.style.boxShadow='0 0 24px rgba(255,51,85,0.5)'"
+          onmouseout="this.style.boxShadow='none'"
+        >
+          🗑 &nbsp;DELETE FILE
+        </button>
+        <div id="deleteResult" style="font-size: 12px; text-align: center; letter-spacing: 0.08em; display: none;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ══ MAIN APP ══ -->
 <div id="app">
 <div class="wrap">
   <header>
-    <div class="logo">TRASH<span>CORE</span></div>
-    <div class="tagline">fast. anonymous. permanent media hosting<span class="blink">_</span></div>
+    <div class="header-brand">
+      <div class="logo">TRASH<span>CORE</span></div>
+      <div class="tagline">fast. anonymous. permanent media hosting<span class="blink">_</span></div>
+    </div>
   </header>
 
   <div class="stats-bar">
@@ -724,83 +1631,87 @@
 </div>
 </div>
 
+<!-- ══ AI ASSISTANT FAB ══ -->
+<button class="ai-fab" id="aiFab" style="display:none;" onclick="toggleAI()" title="AI Assistant">
+  <span class="ai-fab-label">AI Assistant</span>
+  🤖
+</button>
+
+<!-- ══ AI PANEL ══ -->
+<div class="ai-panel" id="aiPanel">
+  <div class="ai-panel-header">
+    <div class="ai-panel-dot"></div>
+    <div class="ai-panel-title">TRASHCORE AI</div>
+    <button class="ai-panel-close" onclick="toggleAI()">✕</button>
+  </div>
+  <div class="ai-messages" id="aiMessages">
+    <div class="ai-msg bot">
+      <div class="ai-msg-label">AI Assistant</div>
+      Hey! I'm the TRASHCORE AI. Ask me anything about how this site works — uploads, file limits, deletion, privacy, or anything else. 💙
+    </div>
+  </div>
+  <div class="ai-quick-btns" id="aiQuickBtns">
+    <button class="ai-quick-btn" onclick="aiAsk('How do I upload a file?')">How to upload?</button>
+    <button class="ai-quick-btn" onclick="aiAsk('What is the file size limit?')">File size limit?</button>
+    <button class="ai-quick-btn" onclick="aiAsk('How do I delete my file?')">Delete a file?</button>
+    <button class="ai-quick-btn" onclick="aiAsk('Is my upload private?')">Is it private?</button>
+    <button class="ai-quick-btn" onclick="aiAsk('How do I contact support?')">Contact support?</button>
+  </div>
+  <div class="ai-input-row">
+    <input class="ai-input" id="aiInput" type="text" placeholder="Ask something..." onkeydown="if(event.key==='Enter') aiSend()" />
+    <button class="ai-send-btn" onclick="aiSend()">SEND</button>
+  </div>
+</div>
+
 <script>
   const API = 'https://uploaded-c859616c461e.herokuapp.com';
   const MAX_FILE_MB = 50;
   const MAX_FILE_BYTES = MAX_FILE_MB * 1024 * 1024;
 
   // ══════════════════════════════════════════
-  // BOOT SEQUENCE
+  // BOOT SEQUENCE — Spinning Circle (10 seconds)
   // ══════════════════════════════════════════
-  const bootLines = [
-    { delay: 0,    prompt: '[SYS]',  text: 'TRASHCORE Media Host v2.0 starting up...', status: 'ok' },
-    { delay: 800,  prompt: '[INIT]', text: 'Loading core modules', status: 'ok' },
-    { delay: 1500, prompt: '[NET]',  text: 'Establishing API connection', status: 'ok' },
-    { delay: 2200, prompt: '[DB]',   text: 'Connecting to database cluster', status: 'ok' },
-    { delay: 3000, prompt: '[STG]',  text: 'Mounting storage buckets', status: 'ok' },
-    { delay: 3700, prompt: '[AUTH]', text: 'Verifying service keys', status: 'ok' },
-    { delay: 4400, prompt: '[CDN]',  text: 'Warming up CDN nodes', status: 'ok' },
-    { delay: 5100, prompt: '[SEC]',  text: 'Loading security filters', status: 'ok' },
-    { delay: 5800, prompt: '[MIME]', text: 'Registering MIME type handlers', status: 'ok' },
-    { delay: 6500, prompt: '[UPL]',  text: 'Initializing upload pipeline', status: 'ok' },
-    { delay: 7200, prompt: '[RTE]',  text: 'Registering API routes', status: 'ok' },
-    { delay: 7900, prompt: '[CORS]', text: 'Applying CORS policy', status: 'ok' },
-    { delay: 8600, prompt: '[GEN]',  text: 'Seeding short-ID generator', status: 'ok' },
-    { delay: 9300, prompt: '[STRM]', text: 'Configuring file stream proxy', status: 'ok' },
-    { delay: 10000, prompt: '[IDX]', text: 'Building file index', status: 'ok' },
-    { delay: 10700, prompt: '[LOG]', text: 'Starting access logger', status: 'ok' },
-    { delay: 11400, prompt: '[MON]', text: 'Attaching health monitor', status: 'ok' },
-    { delay: 12100, prompt: '[ENV]', text: 'Reading environment config', status: 'ok' },
-    { delay: 12800, prompt: '[UI]',  text: 'Rendering interface components', status: 'ok' },
-    { delay: 13500, prompt: '[RDY]', text: 'All systems operational', status: 'ok' },
-    { delay: 14200, prompt: '[INF]', text: 'Max upload size: 50MB per file', status: 'warn' },
-    { delay: 14900, prompt: '[INF]', text: 'Supported: images · videos · audio', status: 'warn' },
-    { delay: 15600, prompt: '[SEC]', text: 'Enforcing terms of service gate', status: 'ok' },
-    { delay: 16200, prompt: '[SYS]', text: 'Welcome to TRASHCORE. Loading TOS...', status: 'ok' },
+  const BOOT_DURATION = 10000;
+  const CIRCUMFERENCE = 2 * Math.PI * 56; // 351.86
+
+  const spinnerArc = document.getElementById('spinnerArc');
+  const bootPctLabel = document.getElementById('bootPctLabel');
+  const bootStatusText = document.getElementById('bootStatusText');
+
+  spinnerArc.style.strokeDasharray = CIRCUMFERENCE;
+  spinnerArc.style.strokeDashoffset = CIRCUMFERENCE;
+
+  const bootMessages = [
+    { at: 0,    text: 'Initializing <span>TRASHCORE</span>...' },
+    { at: 1500, text: 'Connecting to <span>API servers</span>...' },
+    { at: 3000, text: 'Loading <span>storage modules</span>...' },
+    { at: 4500, text: 'Applying <span>security filters</span>...' },
+    { at: 6000, text: 'Configuring <span>upload pipeline</span>...' },
+    { at: 7500, text: 'Rendering <span>interface</span>...' },
+    { at: 9000, text: 'All systems <span>operational</span>.' },
   ];
 
-  const progressSteps = [
-    { at: 0,     pct: 0,   label: 'Initializing core modules...' },
-    { at: 2000,  pct: 10,  label: 'Connecting to API...' },
-    { at: 4000,  pct: 25,  label: 'Mounting storage...' },
-    { at: 6000,  pct: 40,  label: 'Loading security modules...' },
-    { at: 8000,  pct: 55,  label: 'Configuring upload pipeline...' },
-    { at: 10000, pct: 68,  label: 'Building file index...' },
-    { at: 12000, pct: 80,  label: 'Rendering interface...' },
-    { at: 14000, pct: 92,  label: 'Finalizing boot sequence...' },
-    { at: 16500, pct: 100, label: 'Boot complete.' },
-  ];
-
-  const terminal = document.getElementById('bootTerminal');
-  const bootFill = document.getElementById('bootFill');
-  const bootPct  = document.getElementById('bootPct');
-  const bootStatus = document.getElementById('bootStatus');
-
-  // Render terminal lines
-  bootLines.forEach(line => {
-    setTimeout(() => {
-      const el = document.createElement('div');
-      el.className = 'boot-line';
-      el.style.animationDelay = '0s';
-      const statusEl = line.status === 'ok'
-        ? `<span class="ok">[ OK ]</span>`
-        : `<span class="warn">[ !! ]</span>`;
-      el.innerHTML = `<span class="prompt">${line.prompt}</span><span class="txt">${line.text}</span>${statusEl}`;
-      terminal.appendChild(el);
-      terminal.scrollTop = terminal.scrollHeight;
-    }, line.delay);
+  bootMessages.forEach(m => {
+    setTimeout(() => { bootStatusText.innerHTML = m.text; }, m.at);
   });
 
-  // Progress bar
-  progressSteps.forEach(step => {
-    setTimeout(() => {
-      bootFill.style.width = step.pct + '%';
-      bootPct.textContent = step.pct + '%';
-      bootStatus.textContent = step.label;
-    }, step.at);
-  });
+  let startTime = Date.now();
 
-  // After ~17s show terms
+  function updateSpinner() {
+    const elapsed = Date.now() - startTime;
+    const pct = Math.min(100, Math.round((elapsed / BOOT_DURATION) * 100));
+    const offset = CIRCUMFERENCE - (pct / 100) * CIRCUMFERENCE;
+
+    spinnerArc.style.strokeDashoffset = offset;
+    bootPctLabel.textContent = pct + '%';
+
+    if (pct < 100) {
+      requestAnimationFrame(updateSpinner);
+    }
+  }
+
+  requestAnimationFrame(updateSpinner);
+
   setTimeout(() => {
     const bootScreen = document.getElementById('bootScreen');
     bootScreen.classList.add('fade-out');
@@ -808,7 +1719,7 @@
       bootScreen.style.display = 'none';
       document.getElementById('termsScreen').classList.add('visible');
     }, 800);
-  }, 17000);
+  }, BOOT_DURATION);
 
   // ══════════════════════════════════════════
   // TERMS
@@ -820,8 +1731,53 @@
   function agreeTerms() {
     document.getElementById('termsScreen').style.display = 'none';
     document.getElementById('app').classList.add('visible');
+    document.getElementById('navMenuBtn').style.display = 'flex';
+    document.getElementById('themeToggleBtn').style.display = 'flex';
+    document.getElementById('aiFab').style.display = 'flex';
     loadStats();
     loadRecent();
+  }
+
+  // ══════════════════════════════════════════
+  // THEME TOGGLE
+  // ══════════════════════════════════════════
+  (function initTheme() {
+    const saved = localStorage.getItem('tc-theme');
+    if (saved === 'light') applyTheme('light', false);
+  })();
+
+  function applyTheme(mode, animate) {
+    const html = document.documentElement;
+    const btn = document.getElementById('themeToggleBtn');
+    const navIcon = document.getElementById('themeNavIcon');
+    const navLabel = document.getElementById('themeNavLabel');
+    const navDesc = document.getElementById('themeNavDesc');
+
+    if (mode === 'light') {
+      html.setAttribute('data-theme', 'light');
+      if (btn) btn.textContent = '☀️';
+      if (navIcon) navIcon.textContent = '🌙';
+      if (navLabel) navLabel.textContent = 'Dark Mode';
+      if (navDesc) navDesc.textContent = 'Switch to the dark theme';
+      localStorage.setItem('tc-theme', 'light');
+    } else {
+      html.removeAttribute('data-theme');
+      if (btn) btn.textContent = '🌙';
+      if (navIcon) navIcon.textContent = '☀️';
+      if (navLabel) navLabel.textContent = 'Light Mode';
+      if (navDesc) navDesc.textContent = 'Switch to a brighter theme';
+      localStorage.setItem('tc-theme', 'dark');
+    }
+
+    if (animate && btn) {
+      btn.classList.add('spin');
+      setTimeout(() => btn.classList.remove('spin'), 350);
+    }
+  }
+
+  function toggleTheme() {
+    const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+    applyTheme(isDark ? 'light' : 'dark', true);
   }
 
   function declineTerms() {
@@ -833,6 +1789,208 @@
           <button onclick="location.reload()" style="background:none;border:1px solid var(--accent);color:var(--accent);font-family:var(--font-mono);font-size:12px;padding:10px 24px;cursor:pointer;letter-spacing:0.1em;">↺ RESTART</button>
         </div>
       </div>`;
+  }
+
+  // ══════════════════════════════════════════
+  // NAVIGATION
+  // ══════════════════════════════════════════
+  function toggleNav() {
+    const btn = document.getElementById('navMenuBtn');
+    const drawer = document.getElementById('navDrawer');
+    const overlay = document.getElementById('navOverlay');
+    const isOpen = drawer.classList.contains('open');
+    if (isOpen) {
+      closeNav();
+    } else {
+      btn.classList.add('open');
+      drawer.classList.add('open');
+      overlay.classList.add('open');
+    }
+  }
+
+  function closeNav() {
+    document.getElementById('navMenuBtn').classList.remove('open');
+    document.getElementById('navDrawer').classList.remove('open');
+    document.getElementById('navOverlay').classList.remove('open');
+  }
+
+  // ══════════════════════════════════════════
+  // MODALS
+  // ══════════════════════════════════════════
+  function openModal(id) {
+    document.getElementById('modal-' + id).classList.add('open');
+  }
+
+  function closeModal(id) {
+    document.getElementById('modal-' + id).classList.remove('open');
+  }
+
+  // Close modal on backdrop click
+  document.querySelectorAll('.modal-backdrop').forEach(el => {
+    el.addEventListener('click', function(e) {
+      if (e.target === this) this.classList.remove('open');
+    });
+  });
+
+  // ══════════════════════════════════════════
+  // DELETE FILE
+  // ══════════════════════════════════════════
+  async function doDeleteFile() {
+    const token = document.getElementById('deleteTokenInput').value.trim();
+    const resultEl = document.getElementById('deleteResult');
+    if (!token) {
+      resultEl.style.display = 'block';
+      resultEl.style.color = 'var(--danger)';
+      resultEl.textContent = '⚠ Please enter a delete token.';
+      return;
+    }
+    resultEl.style.display = 'block';
+    resultEl.style.color = 'var(--muted)';
+    resultEl.textContent = 'Deleting...';
+    try {
+      const r = await fetch(`${API}/delete/${encodeURIComponent(token)}`, { method: 'DELETE' });
+      const data = await r.json();
+      if (data.success || r.ok) {
+        resultEl.style.color = 'var(--accent)';
+        resultEl.textContent = '✓ File deleted successfully.';
+        document.getElementById('deleteTokenInput').value = '';
+      } else {
+        resultEl.style.color = 'var(--danger)';
+        resultEl.textContent = '✗ ' + (data.error || 'Invalid token or file not found.');
+      }
+    } catch {
+      resultEl.style.color = 'var(--danger)';
+      resultEl.textContent = '✗ Network error. Please try again.';
+    }
+  }
+
+  // ══════════════════════════════════════════
+  // AI ASSISTANT
+  // ══════════════════════════════════════════
+  const aiKnowledge = [
+    {
+      keys: ['upload', 'how to upload', 'upload a file', 'send file'],
+      answer: 'To upload a file: drag and drop it onto the upload zone on the main page, or click the zone to browse your files. Select up to 10 files at once, then hit the "UPLOAD FILES" button. You\'ll get a public link instantly!'
+    },
+    {
+      keys: ['file size', 'size limit', 'max', 'maximum', 'limit'],
+      answer: 'The maximum file size is <strong>50MB per file</strong>. You can upload up to <strong>10 files</strong> per batch. Files larger than 50MB will be skipped automatically.'
+    },
+    {
+      keys: ['delete', 'remove', 'delete token', 'delete my file', 'remove file'],
+      answer: 'After uploading, you get a unique <strong>delete token</strong>. Save it — it\'s the only way to delete your file. Go to the Menu → "Delete a File", paste your token, and hit Delete. This action is permanent!'
+    },
+    {
+      keys: ['private', 'privacy', 'public', 'who can see', 'anonymous'],
+      answer: 'All uploaded files are <strong>publicly accessible</strong> to anyone with the link — files are not private. However, uploads are anonymous (no account needed). Your IP is logged for abuse prevention only.'
+    },
+    {
+      keys: ['what file', 'file type', 'supported', 'format', 'extension'],
+      answer: 'TRASHCORE supports <strong>images</strong> (jpg, png, gif, webp...), <strong>videos</strong> (mp4, webm, mov...), and <strong>audio</strong> (mp3, wav, ogg...). Other file types are not accepted.'
+    },
+    {
+      keys: ['contact', 'support', 'help', 'reach', 'whatsapp', 'telegram'],
+      answer: 'You can reach the TRASHCORE team on:\n• <strong>WhatsApp:</strong> +254 787 909 276\n• <strong>Telegram:</strong> @trashcoredev2\n\nUse the Menu in the top-right corner to find quick contact links!'
+    },
+    {
+      keys: ['how long', 'expire', 'expiry', 'storage', 'permanent'],
+      answer: 'Files are stored <strong>indefinitely</strong> by default, but we reserve the right to remove files at any time — especially those violating our terms. There\'s no guaranteed permanent storage, so back up important files.'
+    },
+    {
+      keys: ['ip', 'ip address', 'logged', 'tracking', 'data'],
+      answer: 'Your <strong>IP address is logged</strong> for abuse prevention. TRASHCORE does not use tracking cookies and does not sell your data. See the Privacy Policy in the menu for full details.'
+    },
+    {
+      keys: ['faq', 'question', 'questions'],
+      answer: 'You can check the full FAQ by opening the <strong>Menu</strong> (top-right) → FAQ. It covers uploads, file sizes, deletion, privacy, and more!'
+    },
+    {
+      keys: ['policy', 'privacy policy', 'terms', 'tos', 'terms of service'],
+      answer: 'The <strong>Terms of Service</strong> cover permitted content, file limits, storage, and liability. The <strong>Privacy Policy</strong> explains data collection. Both are available in the Menu (top-right corner).'
+    },
+    {
+      keys: ['report', 'abuse', 'illegal', 'flag'],
+      answer: 'To report illegal or abusive content, contact us directly:\n• <strong>WhatsApp:</strong> +254 787 909 276\n• <strong>Telegram:</strong> @trashcoredev2\n\nSend the file URL and the reason — we respond quickly.'
+    },
+    {
+      keys: ['url', 'link', 'share', 'sharing'],
+      answer: 'After uploading, you\'ll see the public URL in the result card. Click <strong>COPY</strong> to copy it to your clipboard and share it anywhere. The link is permanent (unless the file is deleted).'
+    },
+    {
+      keys: ['account', 'login', 'sign up', 'register'],
+      answer: 'No account needed! TRASHCORE is completely anonymous. Just upload and share — no registration, no sign-in, no email required.'
+    },
+    {
+      keys: ['who made', 'creator', 'developer', 'author', 'built by', 'who created'],
+      answer: 'TRASHCORE was built by <strong>Trashcore Dev</strong> (GitHub: Tennor-modz). You can reach them on WhatsApp (+254 787 909 276) or Telegram (@trashcoredev2).'
+    },
+    {
+      keys: ['blue', 'color', 'colour', 'theme'],
+      answer: 'TRASHCORE v2.0 rocks a sleek <strong>blue theme</strong> — electric blue (#0088ff) with cyan accents (#00ccff). The dark background keeps everything crisp and readable. Like it? 💙'
+    },
+  ];
+
+  function aiGetResponse(input) {
+    const q = input.toLowerCase();
+    for (const entry of aiKnowledge) {
+      if (entry.keys.some(k => q.includes(k))) {
+        return entry.answer;
+      }
+    }
+    return "I'm not sure about that one! Try asking about <strong>uploads</strong>, <strong>file limits</strong>, <strong>deletion</strong>, <strong>privacy</strong>, or <strong>contact details</strong>. You can also reach us on WhatsApp (+254 787 909 276) or Telegram (@trashcoredev2) for direct help.";
+  }
+
+  function toggleAI() {
+    const panel = document.getElementById('aiPanel');
+    panel.classList.toggle('open');
+    if (panel.classList.contains('open')) {
+      setTimeout(() => document.getElementById('aiInput').focus(), 300);
+    }
+  }
+
+  function aiAsk(question) {
+    document.getElementById('aiInput').value = question;
+    aiSend();
+  }
+
+  function aiAddMessage(text, role) {
+    const msgs = document.getElementById('aiMessages');
+    const el = document.createElement('div');
+    el.className = 'ai-msg ' + role;
+    if (role === 'bot') {
+      el.innerHTML = `<div class="ai-msg-label">AI Assistant</div>${text}`;
+    } else {
+      el.innerHTML = `<div class="ai-msg-label">You</div>${text}`;
+    }
+    msgs.appendChild(el);
+    msgs.scrollTop = msgs.scrollHeight;
+
+    // Hide quick buttons after first question
+    document.getElementById('aiQuickBtns').style.display = 'none';
+    return el;
+  }
+
+  function aiSend() {
+    const input = document.getElementById('aiInput');
+    const question = input.value.trim();
+    if (!question) return;
+
+    aiAddMessage(question, 'user');
+    input.value = '';
+
+    // Show typing indicator
+    const msgs = document.getElementById('aiMessages');
+    const typing = document.createElement('div');
+    typing.className = 'ai-typing';
+    typing.innerHTML = '<span></span><span></span><span></span>';
+    msgs.appendChild(typing);
+    msgs.scrollTop = msgs.scrollHeight;
+
+    setTimeout(() => {
+      typing.remove();
+      const response = aiGetResponse(question);
+      aiAddMessage(response, 'bot');
+    }, 800 + Math.random() * 400);
   }
 
   // ══════════════════════════════════════════
