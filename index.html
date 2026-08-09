@@ -120,6 +120,43 @@
   }
   .stats-line b{color:var(--ink);font-family:var(--font-mono);}
 
+  /* ═══ DOWNLOAD LANDING PAGE (mediafire-style share link target) ═══ */
+  #downloadView{display:none;min-height:100vh;}
+  .dl-wrap{max-width:440px;margin:0 auto;padding:60px 20px;}
+  .dl-back{font-size:12px;color:var(--muted);text-decoration:none;display:inline-block;margin-bottom:24px;cursor:pointer;}
+  .dl-back:hover{color:var(--link);}
+  .dl-card{border:1.5px solid var(--line);background:var(--paper);padding:28px 24px;text-align:center;}
+  .dl-icon{font-size:52px;line-height:1;margin-bottom:14px;}
+  .dl-name{font-family:var(--font-display);font-weight:700;font-size:16px;word-break:break-word;margin-bottom:6px;}
+  .dl-meta{font-size:11.5px;color:var(--muted);font-family:var(--font-mono);margin-bottom:20px;}
+  .dl-btn{
+    display:block;width:100%;padding:14px;background:var(--accent);color:var(--accent-ink);
+    border:1.5px solid var(--accent);text-decoration:none;font-family:var(--font-display);
+    font-weight:700;font-size:13px;letter-spacing:.02em;cursor:pointer;margin-bottom:10px;
+  }
+  .dl-btn:hover{background:var(--ink);border-color:var(--ink);}
+  .dl-secondary-row{display:flex;gap:8px;}
+  .dl-secondary-row .btn{flex:1;font-size:11px;padding:9px 10px;}
+  .dl-hosted-by{margin-top:22px;font-size:11px;color:var(--muted);text-align:center;}
+  .dl-hosted-by b{color:var(--ink);}
+  .dl-warn{margin-top:18px;font-size:10.5px;color:var(--muted);text-align:center;line-height:1.6;}
+
+  /* ═══ TABS ═══ */
+  .tabs{display:flex;gap:0;border:1.5px solid var(--line);margin-bottom:20px;}
+  .tab-btn{
+    flex:1;background:var(--paper);border:none;
+    padding:12px 10px;cursor:pointer;text-align:center;
+    font-family:var(--font-display);font-weight:700;font-size:12.5px;
+    letter-spacing:.02em;color:var(--muted);
+    border-right:1.5px solid var(--line);
+  }
+  .tab-btn:last-child{border-right:none;}
+  .tab-btn.active{background:var(--ink);color:var(--paper);}
+  [data-theme="dark"] .tab-btn.active{background:var(--accent);color:var(--accent-ink);}
+  .tab-btn .tab-sub{display:block;font-family:var(--font-body);font-weight:400;font-size:10px;letter-spacing:0;color:inherit;opacity:.7;margin-top:2px;}
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+
   .drop-zone{
     border:1.5px dashed var(--line);
     background:var(--paper);
@@ -271,6 +308,25 @@
 </style>
 </head>
 <body>
+
+<!-- ═══ DOWNLOAD LANDING PAGE — shown when a shared link is opened ═══ -->
+<div id="downloadView">
+  <div class="dl-wrap">
+    <a class="dl-back" onclick="window.location.href = window.location.pathname">← Back to TRASHCORE</a>
+    <div class="dl-card">
+      <div class="dl-icon" id="dlIcon">📁</div>
+      <div class="dl-name" id="dlName">file</div>
+      <div class="dl-meta" id="dlMeta">—</div>
+      <a class="dl-btn" id="dlDownloadBtn" href="#" download>⬇ Download</a>
+      <div class="dl-secondary-row">
+        <button class="btn" id="dlCopyBtn" onclick="dlCopyLink(this)">Copy link</button>
+        <button class="btn" id="dlShareBtn" onclick="dlShare()" style="display:none;">Share</button>
+      </div>
+    </div>
+    <div class="dl-hosted-by">Hosted on <b>🗑 TRASHCORE</b> — the trashiest free file host you've ever seen</div>
+    <div class="dl-warn">Only download files from people you trust. TRASHCORE does not scan uploads for malware.</div>
+  </div>
+</div>
 
 <!-- ═══ TERMS GATE ═══ -->
 <div id="termsScreen">
@@ -428,12 +484,10 @@
 
   <div class="wrap">
     <div class="hero">
-      <div class="hero-mark">👽</div>
+      <div class="hero-mark">🗑</div>
       <div class="hero-title">TRASH<span class="accent">CORE</span></div>
       <div class="hero-tag">the trashiest free file host you've ever seen<span class="blink">_</span></div>
     </div>
-
-    <div class="notice-line">Uploads up to <span id="maxSizeLabel">50MB</span> are allowed per file. You should read the <a onclick="openModal('faq')">FAQ</a>.</div>
 
     <div class="stats-line">
       <span><b id="statFiles">—</b> files hosted</span>
@@ -442,25 +496,56 @@
       <span><b id="statMax">—</b> max file size</span>
     </div>
 
-    <div class="drop-zone" id="dropZone">
-      <input type="file" id="fileInput" multiple accept="image/*,video/*,audio/*" />
-      <div class="drop-title">Drop files here, or click to browse</div>
-      <div class="drop-sub">Images · Videos · Audio &nbsp;—&nbsp; max <b id="maxSizeLabel2">50MB</b> each, up to 10 at once</div>
+    <div class="tabs">
+      <button class="tab-btn active" id="tabBtn-media" onclick="switchTab('media')">🖼 Media Host<span class="tab-sub">images · video · audio</span></button>
+      <button class="tab-btn" id="tabBtn-files" onclick="switchTab('files')">📦 File Share<span class="tab-sub">zip, rar, docs, anything</span></button>
     </div>
 
-    <div class="queue" id="queue"></div>
-    <button class="btn primary upload-btn" id="uploadBtn" disabled>Upload files</button>
+    <!-- ═══ MEDIA TAB ═══ -->
+    <div class="tab-panel active" id="tabPanel-media">
+      <div class="notice-line">Uploads up to <span id="maxSizeLabel-media">50MB</span> are allowed per file. You should read the <a onclick="openModal('faq')">FAQ</a>.</div>
 
-    <div class="progress-wrap" id="progressWrap">
-      <div class="progress-label">Uploading… <b id="progressPct">0%</b></div>
-      <div class="progress-bar-track"><div class="progress-bar-fill" id="progressFill"></div></div>
+      <div class="drop-zone" id="dropZone-media">
+        <input type="file" id="fileInput-media" multiple accept="image/*,video/*,audio/*" />
+        <div class="drop-title">Drop files here, or click to browse</div>
+        <div class="drop-sub">Images · Videos · Audio &nbsp;—&nbsp; max <b id="maxSizeLabel2-media">50MB</b> each, up to 10 at once</div>
+      </div>
+
+      <div class="queue" id="queue-media"></div>
+      <button class="btn primary upload-btn" id="uploadBtn-media" disabled>Upload files</button>
+
+      <div class="progress-wrap" id="progressWrap-media">
+        <div class="progress-label">Uploading… <b id="progressPct-media">0%</b></div>
+        <div class="progress-bar-track"><div class="progress-bar-fill" id="progressFill-media"></div></div>
+      </div>
+
+      <div class="results" id="results-media"></div>
+
+      <div id="recentSection" style="display:none">
+        <div class="section-title">Recent uploads</div>
+        <div class="recent-grid" id="recentGrid"></div>
+      </div>
     </div>
 
-    <div class="results" id="results"></div>
+    <!-- ═══ FILE SHARE TAB ═══ -->
+    <div class="tab-panel" id="tabPanel-files">
+      <div class="notice-line">Zip up anything — archives, installers, docs, apps — and get one link to hand out, MediaFire-style. Up to <span id="maxSizeLabel-files">50MB</span> per file.</div>
 
-    <div id="recentSection" style="display:none">
-      <div class="section-title">Recent uploads</div>
-      <div class="recent-grid" id="recentGrid"></div>
+      <div class="drop-zone" id="dropZone-files">
+        <input type="file" id="fileInput-files" multiple />
+        <div class="drop-title">Drop a file or archive here, or click to browse</div>
+        <div class="drop-sub">Any file type &nbsp;—&nbsp; max <b id="maxSizeLabel2-files">50MB</b> each, up to 10 at once</div>
+      </div>
+
+      <div class="queue" id="queue-files"></div>
+      <button class="btn primary upload-btn" id="uploadBtn-files" disabled>Upload &amp; get link</button>
+
+      <div class="progress-wrap" id="progressWrap-files">
+        <div class="progress-label">Uploading… <b id="progressPct-files">0%</b></div>
+        <div class="progress-bar-track"><div class="progress-bar-fill" id="progressFill-files"></div></div>
+      </div>
+
+      <div class="results" id="results-files"></div>
     </div>
 
     <footer>
@@ -476,6 +561,39 @@
   const API = 'https://uploader2-8ab19f76219d.herokuapp.com';
   const MAX_FILE_MB = 50;
   const MAX_FILE_BYTES = MAX_FILE_MB * 1024 * 1024;
+
+  /* ═══ DOWNLOAD LANDING PAGE (share links point here with ?d=&n=&s=&t=) ═══ */
+  function buildShareLink(f){
+    const p = new URLSearchParams();
+    p.set('d', f.url);
+    p.set('n', f.originalName || f.filename || 'file');
+    if (f.size) p.set('s', f.size);
+    if (f.mimetype) p.set('t', f.mimetype);
+    return window.location.origin + window.location.pathname + '?' + p.toString();
+  }
+  function renderDownloadView(){
+    const p = new URLSearchParams(window.location.search);
+    const url = p.get('d');
+    const name = p.get('n') || 'file';
+    const size = p.get('s') ? parseInt(p.get('s'), 10) : null;
+    const mime = p.get('t') || '';
+
+    document.title = name + ' — TRASHCORE';
+    document.getElementById('dlIcon').textContent = typeIcon(mime, name);
+    document.getElementById('dlName').textContent = name;
+    document.getElementById('dlMeta').textContent = [size ? formatBytes(size) : null, mime || null].filter(Boolean).join(' · ') || 'Ready to download';
+    document.getElementById('dlDownloadBtn').href = url;
+    document.getElementById('downloadView').style.display = 'block';
+
+    if (navigator.share) document.getElementById('dlShareBtn').style.display = 'block';
+  }
+  function dlCopyLink(btn){
+    copyText(window.location.href, btn);
+  }
+  function dlShare(){
+    const p = new URLSearchParams(window.location.search);
+    navigator.share({ title: p.get('n') || 'A file on TRASHCORE', url: window.location.href }).catch(()=>{});
+  }
 
   /* ═══ TERMS GATE ═══ */
   function onTermsCheck(){
@@ -501,6 +619,11 @@
     loadRecent();
   }
   (function initGate(){
+    // A shared download link (?d=...) skips the uploader entirely and shows the download card
+    if (new URLSearchParams(window.location.search).has('d')) {
+      renderDownloadView();
+      return;
+    }
     if (localStorage.getItem('tc-agreed') === '1') {
       startApp();
     } else {
@@ -620,17 +743,170 @@
     setTimeout(()=>{ typing.remove(); aiAddMessage(aiGetResponse(question), 'bot'); }, 500 + Math.random()*300);
   }
 
-  /* ═══ MAIN APP ═══ */
-  const dropZone = document.getElementById('dropZone');
-  const fileInput = document.getElementById('fileInput');
-  const queueEl = document.getElementById('queue');
-  const uploadBtn = document.getElementById('uploadBtn');
-  const progressWrap = document.getElementById('progressWrap');
-  const progressFill = document.getElementById('progressFill');
-  const progressPct = document.getElementById('progressPct');
-  const resultsEl = document.getElementById('results');
+  /* ═══ TABS ═══ */
+  function switchTab(tab){
+    ['media','files'].forEach(t=>{
+      document.getElementById('tabBtn-'+t).classList.toggle('active', t===tab);
+      document.getElementById('tabPanel-'+t).classList.toggle('active', t===tab);
+    });
+  }
 
-  let fileQueue = [];
+  /* ═══ MAIN APP — one factory per tab, own queue + own DOM ═══ */
+  function makeUploader(tab, isFileShare){
+    const dropZone = document.getElementById('dropZone-'+tab);
+    const fileInput = document.getElementById('fileInput-'+tab);
+    const queueEl = document.getElementById('queue-'+tab);
+    const uploadBtn = document.getElementById('uploadBtn-'+tab);
+    const progressWrap = document.getElementById('progressWrap-'+tab);
+    const progressFill = document.getElementById('progressFill-'+tab);
+    const progressPct = document.getElementById('progressPct-'+tab);
+    const resultsEl = document.getElementById('results-'+tab);
+
+    let fileQueue = [];
+
+    dropZone.addEventListener('dragover', e=>{ e.preventDefault(); dropZone.classList.add('drag-over'); });
+    dropZone.addEventListener('dragleave', ()=>dropZone.classList.remove('drag-over'));
+    dropZone.addEventListener('drop', e=>{ e.preventDefault(); dropZone.classList.remove('drag-over'); addFiles([...e.dataTransfer.files]); });
+    fileInput.addEventListener('change', ()=>{ addFiles([...fileInput.files]); fileInput.value=''; });
+
+    function addFiles(files){
+      files.forEach(f=>{ if (!fileQueue.find(q=>q.name===f.name && q.size===f.size)) fileQueue.push(f); });
+      renderQueue();
+    }
+
+    function renderQueue(){
+      queueEl.innerHTML = '';
+      fileQueue.forEach((f,i)=>{
+        const overSize = f.size > MAX_FILE_BYTES;
+        const item = document.createElement('div');
+        item.className = 'queue-item' + (overSize?' too-large':'');
+        item.innerHTML = `
+          <div class="queue-type">${typeIcon(f.type, f.name)}</div>
+          <div class="queue-info">
+            <div class="queue-name">${f.name}</div>
+            <div class="queue-size ${overSize?'over':''}">${formatBytes(f.size)}${overSize?` — exceeds ${MAX_FILE_MB}MB limit`:''}</div>
+          </div>
+          <button class="queue-remove" data-idx="${i}">✕</button>`;
+        queueEl.appendChild(item);
+      });
+      queueEl.querySelectorAll('.queue-remove').forEach(btn=>{
+        btn.addEventListener('click', ()=>{ fileQueue.splice(parseInt(btn.dataset.idx),1); renderQueue(); });
+      });
+      const hasValid = fileQueue.some(f=>f.size<=MAX_FILE_BYTES);
+      uploadBtn.disabled = fileQueue.length===0 || !hasValid;
+    }
+
+    uploadBtn.addEventListener('click', async ()=>{
+      const validFiles = fileQueue.filter(f=>f.size<=MAX_FILE_BYTES);
+      const skipped = fileQueue.length - validFiles.length;
+      if (validFiles.length===0) return;
+      if (skipped>0) toast(`Skipping ${skipped} oversized file${skipped>1?'s':''}`, true);
+
+      uploadBtn.disabled = true;
+      resultsEl.innerHTML = '';
+      progressWrap.classList.add('active');
+      setProgress(0);
+
+      const formData = new FormData();
+      validFiles.forEach(f=>formData.append('files', f));
+
+      try{
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', `${API}/upload`);
+        xhr.upload.addEventListener('progress', e=>{ if (e.lengthComputable) setProgress(Math.round((e.loaded/e.total)*100)); });
+        xhr.onload = ()=>{
+          progressWrap.classList.remove('active');
+          try{
+            const data = JSON.parse(xhr.responseText);
+            if (data.success){
+              data.files.forEach(f=>renderResult(f));
+              toast(`${data.files.length} file${data.files.length>1?'s':''} uploaded`);
+              fileQueue = []; renderQueue(); loadStats();
+              if (!isFileShare) loadRecent();
+            } else {
+              renderError(data.error || 'Upload failed');
+              toast(data.error || 'Upload failed', true);
+            }
+          } catch { renderError('Invalid server response'); }
+          uploadBtn.disabled = false;
+        };
+        xhr.onerror = ()=>{
+          progressWrap.classList.remove('active');
+          renderError('Network error — is the server online?');
+          toast('Network error', true);
+          uploadBtn.disabled = false;
+        };
+        xhr.send(formData);
+      } catch(err){
+        progressWrap.classList.remove('active');
+        renderError(err.message);
+        uploadBtn.disabled = false;
+      }
+    });
+
+    function setProgress(pct){ progressFill.style.width = pct+'%'; progressPct.textContent = pct+'%'; }
+
+    function renderResult(f){
+      const card = document.createElement('div');
+      card.className = 'result-card success';
+      if (isFileShare){
+        const shareLink = buildShareLink(f);
+        card.innerHTML = `
+          <div class="result-header">
+            <span style="font-size:18px;">${typeIcon(f.mimetype, f.originalName || f.filename)}</span>
+            <span class="result-name">${f.originalName || f.filename}</span>
+            <span class="result-badge ok">Ready</span>
+          </div>
+          <div class="result-meta" style="margin-top:0;margin-bottom:10px;">
+            <div>SIZE: ${formatBytes(f.size)}</div>
+            <div>TYPE: ${f.mimetype || 'file'}</div>
+          </div>
+          <div class="token-label" style="margin-bottom:5px;">Share link — send this to others:</div>
+          <div class="result-url-wrap" style="margin-bottom:10px;">
+            <div class="result-url">${shareLink}</div>
+            <button class="copy-btn" onclick="copyText('${shareLink}', this)">Copy</button>
+          </div>
+          <a class="btn primary" href="${shareLink}" target="_blank" style="display:block;text-decoration:none;text-align:center;">Preview download page ↗</a>
+          <div class="delete-token-wrap">
+            <span class="token-label">Delete token:</span>
+            <div class="token-val">${f.deleteToken}</div>
+            <button class="copy-token-btn" onclick="copyText('${f.deleteToken}', this)">Save</button>
+          </div>`;
+      } else {
+        card.innerHTML = `
+          <div class="result-header">
+            <span>${typeIcon(f.mimetype, f.originalName || f.filename)}</span>
+            <span class="result-name">${f.originalName || f.filename}</span>
+            <span class="result-badge ok">Uploaded</span>
+          </div>
+          <div class="result-url-wrap">
+            <div class="result-url">${f.url}</div>
+            <button class="copy-btn" onclick="copyText('${f.url}', this)">Copy</button>
+          </div>
+          <div class="result-meta">
+            <div>SIZE: ${formatBytes(f.size)}</div>
+            <div>TYPE: ${f.mimetype}</div>
+            <div>ID: ${f.id}</div>
+          </div>
+          <div class="delete-token-wrap">
+            <span class="token-label">Delete token:</span>
+            <div class="token-val">${f.deleteToken}</div>
+            <button class="copy-token-btn" onclick="copyText('${f.deleteToken}', this)">Save</button>
+          </div>`;
+      }
+      resultsEl.prepend(card);
+    }
+
+    function renderError(msg){
+      const card = document.createElement('div');
+      card.className = 'result-card error';
+      card.innerHTML = `<div class="result-header"><span>✗</span><span class="result-name">${msg}</span><span class="result-badge err">Failed</span></div>`;
+      resultsEl.prepend(card);
+    }
+  }
+
+  makeUploader('media', false);
+  makeUploader('files', true);
 
   async function loadStats(){
     try{
@@ -640,8 +916,10 @@
       document.getElementById('statSize').textContent = stats.totalSizeMB >= 1024 ? (stats.totalSizeMB/1024).toFixed(2)+' GB' : stats.totalSizeMB+' MB';
       document.getElementById('statViews').textContent = stats.totalViews.toLocaleString();
       document.getElementById('statMax').textContent = stats.maxFileSizeMB+' MB';
-      document.getElementById('maxSizeLabel').textContent = stats.maxFileSizeMB+'MB';
-      document.getElementById('maxSizeLabel2').textContent = stats.maxFileSizeMB+'MB';
+      ['media','files'].forEach(tab=>{
+        document.getElementById('maxSizeLabel-'+tab).textContent = stats.maxFileSizeMB+'MB';
+        document.getElementById('maxSizeLabel2-'+tab).textContent = stats.maxFileSizeMB+'MB';
+      });
     } catch(e){ console.warn('Stats unavailable'); }
   }
 
@@ -667,120 +945,6 @@
         grid.appendChild(card);
       });
     } catch(e){ console.warn('Recent unavailable'); }
-  }
-
-  dropZone.addEventListener('dragover', e=>{ e.preventDefault(); dropZone.classList.add('drag-over'); });
-  dropZone.addEventListener('dragleave', ()=>dropZone.classList.remove('drag-over'));
-  dropZone.addEventListener('drop', e=>{ e.preventDefault(); dropZone.classList.remove('drag-over'); addFiles([...e.dataTransfer.files]); });
-  fileInput.addEventListener('change', ()=>{ addFiles([...fileInput.files]); fileInput.value=''; });
-
-  function addFiles(files){
-    files.forEach(f=>{ if (!fileQueue.find(q=>q.name===f.name && q.size===f.size)) fileQueue.push(f); });
-    renderQueue();
-  }
-
-  function renderQueue(){
-    queueEl.innerHTML = '';
-    fileQueue.forEach((f,i)=>{
-      const overSize = f.size > MAX_FILE_BYTES;
-      const item = document.createElement('div');
-      item.className = 'queue-item' + (overSize?' too-large':'');
-      item.innerHTML = `
-        <div class="queue-type">${typeIcon(f.type)}</div>
-        <div class="queue-info">
-          <div class="queue-name">${f.name}</div>
-          <div class="queue-size ${overSize?'over':''}">${formatBytes(f.size)}${overSize?` — exceeds ${MAX_FILE_MB}MB limit`:''}</div>
-        </div>
-        <button class="queue-remove" data-idx="${i}">✕</button>`;
-      queueEl.appendChild(item);
-    });
-    queueEl.querySelectorAll('.queue-remove').forEach(btn=>{
-      btn.addEventListener('click', ()=>{ fileQueue.splice(parseInt(btn.dataset.idx),1); renderQueue(); });
-    });
-    const hasValid = fileQueue.some(f=>f.size<=MAX_FILE_BYTES);
-    uploadBtn.disabled = fileQueue.length===0 || !hasValid;
-  }
-
-  uploadBtn.addEventListener('click', async ()=>{
-    const validFiles = fileQueue.filter(f=>f.size<=MAX_FILE_BYTES);
-    const skipped = fileQueue.length - validFiles.length;
-    if (validFiles.length===0) return;
-    if (skipped>0) toast(`Skipping ${skipped} oversized file${skipped>1?'s':''}`, true);
-
-    uploadBtn.disabled = true;
-    resultsEl.innerHTML = '';
-    progressWrap.classList.add('active');
-    setProgress(0);
-
-    const formData = new FormData();
-    validFiles.forEach(f=>formData.append('files', f));
-
-    try{
-      const xhr = new XMLHttpRequest();
-      xhr.open('POST', `${API}/upload`);
-      xhr.upload.addEventListener('progress', e=>{ if (e.lengthComputable) setProgress(Math.round((e.loaded/e.total)*100)); });
-      xhr.onload = ()=>{
-        progressWrap.classList.remove('active');
-        try{
-          const data = JSON.parse(xhr.responseText);
-          if (data.success){
-            data.files.forEach(f=>renderResult(f));
-            toast(`${data.files.length} file${data.files.length>1?'s':''} uploaded`);
-            fileQueue = []; renderQueue(); loadStats(); loadRecent();
-          } else {
-            renderError(data.error || 'Upload failed');
-            toast(data.error || 'Upload failed', true);
-          }
-        } catch { renderError('Invalid server response'); }
-        uploadBtn.disabled = false;
-      };
-      xhr.onerror = ()=>{
-        progressWrap.classList.remove('active');
-        renderError('Network error — is the server online?');
-        toast('Network error', true);
-        uploadBtn.disabled = false;
-      };
-      xhr.send(formData);
-    } catch(err){
-      progressWrap.classList.remove('active');
-      renderError(err.message);
-      uploadBtn.disabled = false;
-    }
-  });
-
-  function setProgress(pct){ progressFill.style.width = pct+'%'; progressPct.textContent = pct+'%'; }
-
-  function renderResult(f){
-    const card = document.createElement('div');
-    card.className = 'result-card success';
-    card.innerHTML = `
-      <div class="result-header">
-        <span>${typeIcon(f.mimetype)}</span>
-        <span class="result-name">${f.originalName || f.filename}</span>
-        <span class="result-badge ok">Uploaded</span>
-      </div>
-      <div class="result-url-wrap">
-        <div class="result-url">${f.url}</div>
-        <button class="copy-btn" onclick="copyText('${f.url}', this)">Copy</button>
-      </div>
-      <div class="result-meta">
-        <div>SIZE: ${formatBytes(f.size)}</div>
-        <div>TYPE: ${f.mimetype}</div>
-        <div>ID: ${f.id}</div>
-      </div>
-      <div class="delete-token-wrap">
-        <span class="token-label">Delete token:</span>
-        <div class="token-val">${f.deleteToken}</div>
-        <button class="copy-token-btn" onclick="copyText('${f.deleteToken}', this)">Save</button>
-      </div>`;
-    resultsEl.prepend(card);
-  }
-
-  function renderError(msg){
-    const card = document.createElement('div');
-    card.className = 'result-card error';
-    card.innerHTML = `<div class="result-header"><span>✗</span><span class="result-name">${msg}</span><span class="result-badge err">Failed</span></div>`;
-    resultsEl.prepend(card);
   }
 
   function copyText(text, btn){
@@ -817,11 +981,20 @@
     return `${Math.floor(h/24)}d ago`;
   }
 
-  function typeIcon(mime){
-    if (!mime) return '📁';
-    if (mime.startsWith('image/')) return '🖼';
-    if (mime.startsWith('video/')) return '🎬';
-    if (mime.startsWith('audio/')) return '🎵';
+  function typeIcon(mime, name){
+    if (mime){
+      if (mime.startsWith('image/')) return '🖼';
+      if (mime.startsWith('video/')) return '🎬';
+      if (mime.startsWith('audio/')) return '🎵';
+      if (mime === 'application/pdf') return '📕';
+    }
+    const ext = (name || '').split('.').pop().toLowerCase();
+    if (['zip','rar','7z','tar','gz','xz'].includes(ext)) return '🗜';
+    if (['doc','docx','odt','rtf'].includes(ext)) return '📄';
+    if (['xls','xlsx','csv','ods'].includes(ext)) return '📊';
+    if (['ppt','pptx','odp'].includes(ext)) return '📽';
+    if (['exe','apk','msi','dmg'].includes(ext)) return '⚙️';
+    if (ext === 'pdf') return '📕';
     return '📁';
   }
 </script>
