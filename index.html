@@ -1,1665 +1,474 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TRASHCORE — Media Host</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --bg: #04080f;
-      --surface: #080f1a;
-      --border: #0d1e33;
-      --accent: #0088ff;
-      --accent2: #00ccff;
-      --danger: #ff3355;
-      --text: #d0e4ff;
-      --muted: #3a5a7a;
-      --font-mono: 'Share Tech Mono', monospace;
-      --font-display: 'Orbitron', sans-serif;
-    }
-
-    /* ══ LIGHT MODE ══ */
-    [data-theme="light"] {
-      --bg: #eef4ff;
-      --surface: #ffffff;
-      --border: #b8d0ee;
-      --accent: #005fcc;
-      --accent2: #0099bb;
-      --danger: #d4002e;
-      --text: #091830;
-      --muted: #6688aa;
-    }
-
-    [data-theme="light"] body::before {
-      background: repeating-linear-gradient(
-        0deg, transparent, transparent 2px,
-        rgba(0,95,204,0.025) 2px, rgba(0,95,204,0.025) 4px
-      );
-    }
-
-    [data-theme="light"] body::after {
-      background-image:
-        linear-gradient(rgba(0,95,204,0.06) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,95,204,0.06) 1px, transparent 1px);
-      background-size: 40px 40px;
-    }
-
-    [data-theme="light"] .nav-overlay { background: rgba(200,220,245,0.7); }
-    [data-theme="light"] .modal-backdrop { background: rgba(180,210,240,0.85); }
-    [data-theme="light"] .result-url { background: rgba(0,0,0,0.04); }
-    [data-theme="light"] .queue-type { background: rgba(0,0,0,0.03); }
-    [data-theme="light"] .recent-thumb-placeholder { background: rgba(0,0,0,0.05); }
-    [data-theme="light"] .ai-msg.bot { background: rgba(0,95,204,0.06); border-color: rgba(0,95,204,0.2); }
-    [data-theme="light"] .token-val { background: rgba(212,0,46,0.04); }
-    [data-theme="light"] .drop-zone { background: rgba(0,95,204,0.03); }
-    [data-theme="light"] .drop-zone:hover, [data-theme="light"] .drop-zone.drag-over { background: rgba(0,95,204,0.07); }
-    [data-theme="light"] .upload-btn:disabled { color: #aaa; }
-
-    /* ══ THEME TOGGLE BUTTON ══ */
-    .theme-toggle-btn {
-      position: fixed;
-      top: 20px;
-      right: 72px;
-      z-index: 6000;
-      background: var(--surface);
-      border: 1px solid var(--accent);
-      color: var(--accent);
-      width: 42px;
-      height: 42px;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      font-size: 18px;
-      box-shadow: 0 0 20px rgba(0,136,255,0.2);
-      transition: box-shadow 0.2s, background 0.15s, transform 0.3s;
-    }
-
-    .theme-toggle-btn:hover {
-      background: rgba(0,136,255,0.1);
-      box-shadow: 0 0 30px rgba(0,136,255,0.4);
-    }
-
-    .theme-toggle-btn.spin { transform: rotate(360deg); }
-
-    @media (max-width: 540px) {
-      .theme-toggle-btn { top: 14px; right: 64px; }
-    }
-
-    html, body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--font-mono);
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
-
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background: repeating-linear-gradient(
-        0deg, transparent, transparent 2px,
-        rgba(0,136,255,0.012) 2px, rgba(0,136,255,0.012) 4px
-      );
-      pointer-events: none;
-      z-index: 9999;
-    }
-
-    body::after {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(0,136,255,0.025) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,136,255,0.025) 1px, transparent 1px);
-      background-size: 40px 40px;
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    /* ══════════════════════════════════════════
-       BOOT SCREEN — Spinning Circle
-    ══════════════════════════════════════════ */
-    #bootScreen {
-      position: fixed;
-      inset: 0;
-      background: var(--bg);
-      z-index: 8000;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 32px;
-      padding: 24px;
-    }
-
-    #bootScreen.fade-out {
-      animation: fadeOut 0.8s ease forwards;
-    }
-
-    @keyframes fadeOut {
-      to { opacity: 0; pointer-events: none; }
-    }
-
-    .boot-logo {
-      font-family: var(--font-display);
-      font-size: clamp(32px, 8vw, 64px);
-      font-weight: 900;
-      letter-spacing: 0.08em;
-      color: var(--accent);
-      text-shadow: 0 0 40px rgba(0,136,255,0.6), 0 0 80px rgba(0,136,255,0.25);
-      animation: glitch 4s infinite;
-    }
-
-    .boot-logo span { color: var(--accent2); text-shadow: 0 0 40px rgba(0,204,255,0.5); }
-
-    @keyframes glitch {
-      0%, 92%, 100% { transform: none; filter: none; }
-      93%  { transform: skewX(-2deg) translateX(3px); filter: hue-rotate(30deg); }
-      94%  { transform: skewX(2deg) translateX(-3px); }
-      95%  { transform: none; filter: none; }
-      96%  { transform: translateX(2px); filter: hue-rotate(-30deg); }
-      97%  { transform: none; filter: none; }
-    }
-
-    .boot-subtitle {
-      font-size: 11px;
-      color: var(--muted);
-      letter-spacing: 0.25em;
-      text-transform: uppercase;
-    }
-
-    /* Spinner container */
-    .boot-spinner-wrap {
-      position: relative;
-      width: 140px;
-      height: 140px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .boot-spinner-svg {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      transform: rotate(-90deg);
-      animation: spinRotate 1.4s linear infinite;
-    }
-
-    @keyframes spinRotate {
-      to { transform: rotate(270deg); }
-    }
-
-    .boot-spinner-track {
-      fill: none;
-      stroke: var(--border);
-      stroke-width: 5;
-    }
-
-    .boot-spinner-fill {
-      fill: none;
-      stroke: url(#spinGrad);
-      stroke-width: 5;
-      stroke-linecap: round;
-      stroke-dasharray: 351.86;
-      stroke-dashoffset: 351.86;
-      transition: stroke-dashoffset 0.3s linear;
-      filter: drop-shadow(0 0 8px rgba(0,136,255,0.8));
-    }
-
-    .boot-pct-label {
-      font-family: var(--font-display);
-      font-size: 22px;
-      font-weight: 700;
-      color: var(--accent);
-      text-shadow: 0 0 20px rgba(0,136,255,0.6);
-      letter-spacing: 0.05em;
-    }
-
-    .boot-pct-sub {
-      font-size: 9px;
-      color: var(--muted);
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      margin-top: 2px;
-      text-align: center;
-    }
-
-    .boot-status-text {
-      font-size: 11px;
-      color: var(--muted);
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      text-align: center;
-      max-width: 300px;
-      line-height: 1.6;
-    }
-
-    .boot-status-text span { color: var(--accent2); }
-
-    /* ══════════════════════════════════════════
-       TERMS SCREEN
-    ══════════════════════════════════════════ */
-    #termsScreen {
-      position: fixed;
-      inset: 0;
-      background: var(--bg);
-      z-index: 7000;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-    }
-
-    #termsScreen.visible {
-      display: flex;
-      animation: fadeIn 0.5s ease;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(12px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    .terms-box {
-      width: 100%;
-      max-width: 580px;
-      border: 1px solid var(--accent);
-      background: var(--surface);
-      box-shadow: 0 0 60px rgba(0,136,255,0.1);
-    }
-
-    .terms-header {
-      padding: 20px 24px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .terms-header-icon { font-size: 20px; }
-
-    .terms-header-title {
-      font-family: var(--font-display);
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--accent);
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-    }
-
-    .terms-header-sub {
-      font-size: 10px;
-      color: var(--muted);
-      letter-spacing: 0.1em;
-      margin-top: 2px;
-    }
-
-    .terms-body {
-      padding: 20px 24px;
-      max-height: 320px;
-      overflow-y: auto;
-      font-size: 11px;
-      line-height: 1.8;
-      color: var(--muted);
-      letter-spacing: 0.05em;
-    }
-
-    .terms-body::-webkit-scrollbar { width: 4px; }
-    .terms-body::-webkit-scrollbar-track { background: var(--bg); }
-    .terms-body::-webkit-scrollbar-thumb { background: var(--border); }
-
-    .terms-body h4 {
-      font-family: var(--font-display);
-      font-size: 10px;
-      font-weight: 700;
-      color: var(--accent2);
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      margin: 16px 0 6px;
-    }
-
-    .terms-body h4:first-child { margin-top: 0; }
-
-    .terms-body p { margin-bottom: 6px; color: var(--text); }
-    .terms-body ul { padding-left: 16px; }
-    .terms-body li { margin-bottom: 4px; }
-    .terms-body strong { color: var(--accent); }
-    .terms-body .warn-text { color: var(--danger); }
-
-    .terms-footer {
-      padding: 16px 24px;
-      border-top: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .terms-checkbox-row {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      font-size: 11px;
-      color: var(--text);
-      cursor: pointer;
-      letter-spacing: 0.05em;
-    }
-
-    .terms-checkbox-row input[type="checkbox"] {
-      accent-color: var(--accent);
-      width: 14px;
-      height: 14px;
-      margin-top: 2px;
-      flex-shrink: 0;
-      cursor: pointer;
-    }
-
-    .terms-btn-row { display: flex; gap: 10px; }
-
-    .terms-agree-btn {
-      flex: 1;
-      padding: 14px;
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      font-family: var(--font-display);
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: box-shadow 0.2s, transform 0.1s;
-    }
-
-    .terms-agree-btn:disabled {
-      background: var(--muted);
-      color: #333;
-      cursor: not-allowed;
-    }
-
-    .terms-agree-btn:not(:disabled):hover {
-      box-shadow: 0 0 30px rgba(0,136,255,0.5);
-      transform: translateY(-1px);
-    }
-
-    .terms-decline-btn {
-      padding: 14px 20px;
-      background: none;
-      border: 1px solid var(--danger);
-      color: var(--danger);
-      font-family: var(--font-mono);
-      font-size: 11px;
-      cursor: pointer;
-      letter-spacing: 0.1em;
-      transition: background 0.15s;
-    }
-
-    .terms-decline-btn:hover { background: rgba(255,51,85,0.08); }
-
-    /* ══════════════════════════════════════════
-       NAVIGATION MENU
-    ══════════════════════════════════════════ */
-    .nav-menu-btn {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      z-index: 6000;
-      background: var(--surface);
-      border: 1px solid var(--accent);
-      color: var(--accent);
-      width: 42px;
-      height: 42px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 5px;
-      cursor: pointer;
-      box-shadow: 0 0 20px rgba(0,136,255,0.2);
-      transition: box-shadow 0.2s, background 0.15s;
-    }
-
-    .nav-menu-btn:hover {
-      background: rgba(0,136,255,0.1);
-      box-shadow: 0 0 30px rgba(0,136,255,0.4);
-    }
-
-    .nav-menu-btn .bar {
-      width: 18px;
-      height: 2px;
-      background: var(--accent);
-      transition: transform 0.3s, opacity 0.3s;
-    }
-
-    .nav-menu-btn.open .bar:nth-child(1) { transform: translateY(7px) rotate(45deg); }
-    .nav-menu-btn.open .bar:nth-child(2) { opacity: 0; }
-    .nav-menu-btn.open .bar:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
-
-    .nav-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(4,8,15,0.7);
-      z-index: 5500;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s;
-    }
-
-    .nav-overlay.open {
-      opacity: 1;
-      pointer-events: all;
-    }
-
-    .nav-drawer {
-      position: fixed;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      width: 300px;
-      max-width: 90vw;
-      background: var(--surface);
-      border-left: 1px solid var(--accent);
-      z-index: 5800;
-      transform: translateX(100%);
-      transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
-      display: flex;
-      flex-direction: column;
-      box-shadow: -10px 0 60px rgba(0,136,255,0.15);
-    }
-
-    .nav-drawer.open {
-      transform: translateX(0);
-    }
-
-    .nav-drawer-header {
-      padding: 24px 20px 16px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .nav-drawer-logo {
-      font-family: var(--font-display);
-      font-size: 16px;
-      font-weight: 900;
-      color: var(--accent);
-      letter-spacing: 0.1em;
-    }
-
-    .nav-drawer-logo span { color: var(--accent2); }
-
-    .nav-drawer-sub {
-      font-size: 9px;
-      color: var(--muted);
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-    }
-
-    .nav-items {
-      flex: 1;
-      padding: 12px 0;
-      overflow-y: auto;
-    }
-
-    .nav-section-label {
-      font-size: 9px;
-      color: var(--muted);
-      letter-spacing: 0.25em;
-      text-transform: uppercase;
-      padding: 12px 20px 6px;
-    }
-
-    .nav-item {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      padding: 13px 20px;
-      color: var(--text);
-      font-size: 12px;
-      letter-spacing: 0.08em;
-      cursor: pointer;
-      text-decoration: none;
-      transition: background 0.15s, color 0.15s;
-      border: none;
-      background: none;
-      width: 100%;
-      text-align: left;
-    }
-
-    .nav-item:hover {
-      background: rgba(0,136,255,0.08);
-      color: var(--accent);
-    }
-
-    .nav-item-icon {
-      width: 30px;
-      height: 30px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 1px solid var(--border);
-      font-size: 14px;
-      flex-shrink: 0;
-      transition: border-color 0.15s;
-    }
-
-    .nav-item:hover .nav-item-icon { border-color: var(--accent); }
-
-    .nav-item-text { flex: 1; }
-    .nav-item-name { display: block; margin-bottom: 2px; }
-    .nav-item-desc { display: block; font-size: 10px; color: var(--muted); letter-spacing: 0.05em; }
-
-    .nav-divider {
-      height: 1px;
-      background: var(--border);
-      margin: 8px 20px;
-    }
-
-    .nav-drawer-footer {
-      padding: 16px 20px;
-      border-top: 1px solid var(--border);
-      font-size: 10px;
-      color: var(--muted);
-      letter-spacing: 0.08em;
-      text-align: center;
-    }
-
-    /* ══════════════════════════════════════════
-       MODAL (FAQ / POLICY)
-    ══════════════════════════════════════════ */
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(4,8,15,0.85);
-      z-index: 9000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.25s;
-    }
-
-    .modal-backdrop.open {
-      opacity: 1;
-      pointer-events: all;
-    }
-
-    .modal-box {
-      width: 100%;
-      max-width: 600px;
-      max-height: 80vh;
-      background: var(--surface);
-      border: 1px solid var(--accent);
-      box-shadow: 0 0 80px rgba(0,136,255,0.15);
-      display: flex;
-      flex-direction: column;
-      transform: translateY(16px);
-      transition: transform 0.25s;
-    }
-
-    .modal-backdrop.open .modal-box {
-      transform: translateY(0);
-    }
-
-    .modal-header {
-      padding: 18px 24px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .modal-title {
-      font-family: var(--font-display);
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--accent);
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-    }
-
-    .modal-close {
-      background: none;
-      border: 1px solid var(--border);
-      color: var(--muted);
-      font-size: 14px;
-      width: 28px;
-      height: 28px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: border-color 0.15s, color 0.15s;
-    }
-
-    .modal-close:hover { border-color: var(--danger); color: var(--danger); }
-
-    .modal-body {
-      padding: 20px 24px;
-      overflow-y: auto;
-      font-size: 12px;
-      line-height: 1.9;
-      color: var(--text);
-      flex: 1;
-    }
-
-    .modal-body::-webkit-scrollbar { width: 4px; }
-    .modal-body::-webkit-scrollbar-track { background: var(--bg); }
-    .modal-body::-webkit-scrollbar-thumb { background: var(--border); }
-
-    .faq-item {
-      border-bottom: 1px solid var(--border);
-      padding: 16px 0;
-    }
-
-    .faq-item:first-child { padding-top: 0; }
-    .faq-item:last-child { border-bottom: none; }
-
-    .faq-q {
-      font-family: var(--font-display);
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--accent2);
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      margin-bottom: 8px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .faq-q::before { content: 'Q:'; color: var(--accent); flex-shrink: 0; }
-
-    .faq-a {
-      color: var(--text);
-      font-size: 12px;
-      line-height: 1.8;
-      padding-left: 22px;
-    }
-
-    .policy-section h4 {
-      font-family: var(--font-display);
-      font-size: 10px;
-      font-weight: 700;
-      color: var(--accent2);
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      margin: 18px 0 8px;
-    }
-
-    .policy-section h4:first-child { margin-top: 0; }
-    .policy-section p { color: var(--text); margin-bottom: 8px; font-size: 12px; }
-    .policy-section ul { padding-left: 18px; margin-bottom: 8px; }
-    .policy-section li { margin-bottom: 4px; font-size: 12px; color: var(--text); }
-    .policy-section strong { color: var(--accent); }
-    .policy-section .warn { color: var(--danger); }
-
-    /* ══════════════════════════════════════════
-       AI ASSISTANT BUTTON + CHAT PANEL
-    ══════════════════════════════════════════ */
-    .ai-fab {
-      position: fixed;
-      bottom: 28px;
-      right: 24px;
-      z-index: 6000;
-      width: 54px;
-      height: 54px;
-      border-radius: 0;
-      background: var(--accent);
-      border: none;
-      color: #fff;
-      font-size: 22px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 0 30px rgba(0,136,255,0.5), 0 4px 20px rgba(0,0,0,0.4);
-      transition: box-shadow 0.2s, transform 0.15s;
-      animation: fabPulse 3s ease-in-out infinite;
-    }
-
-    @keyframes fabPulse {
-      0%, 100% { box-shadow: 0 0 30px rgba(0,136,255,0.5), 0 4px 20px rgba(0,0,0,0.4); }
-      50% { box-shadow: 0 0 50px rgba(0,136,255,0.8), 0 4px 20px rgba(0,0,0,0.4); }
-    }
-
-    .ai-fab:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 0 50px rgba(0,136,255,0.7), 0 6px 24px rgba(0,0,0,0.5);
-    }
-
-    .ai-fab-label {
-      position: absolute;
-      right: 62px;
-      background: var(--surface);
-      border: 1px solid var(--accent);
-      color: var(--accent);
-      font-family: var(--font-mono);
-      font-size: 10px;
-      letter-spacing: 0.1em;
-      padding: 4px 10px;
-      white-space: nowrap;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.2s;
-    }
-
-    .ai-fab:hover .ai-fab-label { opacity: 1; }
-
-    .ai-panel {
-      position: fixed;
-      bottom: 90px;
-      right: 24px;
-      z-index: 5900;
-      width: 340px;
-      max-width: calc(100vw - 32px);
-      background: var(--surface);
-      border: 1px solid var(--accent);
-      box-shadow: 0 0 60px rgba(0,136,255,0.2);
-      display: flex;
-      flex-direction: column;
-      max-height: 480px;
-      transform: scale(0.9) translateY(20px);
-      transform-origin: bottom right;
-      opacity: 0;
-      pointer-events: none;
-      transition: transform 0.25s cubic-bezier(0.4,0,0.2,1), opacity 0.25s;
-    }
-
-    .ai-panel.open {
-      transform: scale(1) translateY(0);
-      opacity: 1;
-      pointer-events: all;
-    }
-
-    .ai-panel-header {
-      padding: 14px 16px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .ai-panel-dot {
-      width: 8px;
-      height: 8px;
-      background: var(--accent);
-      border-radius: 50%;
-      box-shadow: 0 0 8px rgba(0,136,255,0.8);
-      animation: dotBlink 1.5s ease-in-out infinite;
-    }
-
-    @keyframes dotBlink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.3; }
-    }
-
-    .ai-panel-title {
-      font-family: var(--font-display);
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--accent);
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      flex: 1;
-    }
-
-    .ai-panel-close {
-      background: none;
-      border: none;
-      color: var(--muted);
-      font-size: 16px;
-      cursor: pointer;
-      padding: 2px 6px;
-      transition: color 0.15s;
-    }
-
-    .ai-panel-close:hover { color: var(--danger); }
-
-    .ai-messages {
-      flex: 1;
-      overflow-y: auto;
-      padding: 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .ai-messages::-webkit-scrollbar { width: 3px; }
-    .ai-messages::-webkit-scrollbar-track { background: var(--bg); }
-    .ai-messages::-webkit-scrollbar-thumb { background: var(--border); }
-
-    .ai-msg {
-      max-width: 85%;
-      font-size: 12px;
-      line-height: 1.7;
-      letter-spacing: 0.03em;
-      animation: msgIn 0.2s ease;
-    }
-
-    @keyframes msgIn {
-      from { opacity: 0; transform: translateY(6px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .ai-msg.bot {
-      align-self: flex-start;
-      background: rgba(0,136,255,0.08);
-      border: 1px solid rgba(0,136,255,0.2);
-      color: var(--text);
-      padding: 10px 13px;
-    }
-
-    .ai-msg.user {
-      align-self: flex-end;
-      background: var(--accent);
-      color: #fff;
-      padding: 10px 13px;
-    }
-
-    .ai-msg-label {
-      font-size: 9px;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      margin-bottom: 4px;
-      opacity: 0.6;
-    }
-
-    .ai-typing {
-      align-self: flex-start;
-      display: flex;
-      gap: 4px;
-      padding: 12px 14px;
-      background: rgba(0,136,255,0.08);
-      border: 1px solid rgba(0,136,255,0.2);
-    }
-
-    .ai-typing span {
-      width: 6px;
-      height: 6px;
-      background: var(--accent);
-      border-radius: 50%;
-      animation: typingDot 1.2s ease-in-out infinite;
-    }
-
-    .ai-typing span:nth-child(2) { animation-delay: 0.2s; }
-    .ai-typing span:nth-child(3) { animation-delay: 0.4s; }
-
-    @keyframes typingDot {
-      0%, 80%, 100% { transform: scale(1); opacity: 0.5; }
-      40% { transform: scale(1.3); opacity: 1; }
-    }
-
-    .ai-quick-btns {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      padding: 0 14px 10px;
-    }
-
-    .ai-quick-btn {
-      background: none;
-      border: 1px solid var(--border);
-      color: var(--accent2);
-      font-family: var(--font-mono);
-      font-size: 10px;
-      padding: 5px 10px;
-      cursor: pointer;
-      letter-spacing: 0.05em;
-      transition: border-color 0.15s, background 0.15s;
-    }
-
-    .ai-quick-btn:hover {
-      border-color: var(--accent2);
-      background: rgba(0,204,255,0.06);
-    }
-
-    .ai-input-row {
-      padding: 12px 14px;
-      border-top: 1px solid var(--border);
-      display: flex;
-      gap: 8px;
-    }
-
-    .ai-input {
-      flex: 1;
-      background: rgba(0,0,0,0.3);
-      border: 1px solid var(--border);
-      color: var(--text);
-      font-family: var(--font-mono);
-      font-size: 12px;
-      padding: 8px 12px;
-      outline: none;
-      transition: border-color 0.15s;
-    }
-
-    .ai-input:focus { border-color: var(--accent); }
-    .ai-input::placeholder { color: var(--muted); }
-
-    .ai-send-btn {
-      background: var(--accent);
-      border: none;
-      color: #fff;
-      font-family: var(--font-mono);
-      font-size: 12px;
-      padding: 8px 14px;
-      cursor: pointer;
-      letter-spacing: 0.1em;
-      transition: box-shadow 0.15s;
-    }
-
-    .ai-send-btn:hover { box-shadow: 0 0 20px rgba(0,136,255,0.5); }
-
-    /* ══════════════════════════════════════════
-       MAIN APP
-    ══════════════════════════════════════════ */
-    #app { display: none; }
-    #app.visible { display: block; animation: fadeIn 0.5s ease; }
-
-    .wrap {
-      position: relative;
-      z-index: 1;
-      max-width: 860px;
-      margin: 0 auto;
-      padding: 0 20px 100px;
-    }
-
-    header {
-      padding: 48px 0 32px;
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 48px;
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 16px;
-    }
-
-    .header-brand {}
-
-    .logo {
-      font-family: var(--font-display);
-      font-size: clamp(28px, 6vw, 52px);
-      font-weight: 900;
-      letter-spacing: 0.08em;
-      color: var(--accent);
-      text-shadow: 0 0 30px rgba(0,136,255,0.5), 0 0 60px rgba(0,136,255,0.2);
-      line-height: 1;
-    }
-
-    .logo span { color: var(--accent2); text-shadow: 0 0 30px rgba(0,204,255,0.4); }
-
-    .tagline {
-      margin-top: 10px;
-      font-size: 12px;
-      color: var(--muted);
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-    }
-
-    .tagline::before { content: '> '; color: var(--accent); }
-
-    .stats-bar {
-      display: flex;
-      gap: 32px;
-      flex-wrap: wrap;
-      margin-bottom: 40px;
-      padding: 16px 20px;
-      border: 1px solid var(--border);
-      background: var(--surface);
-      font-size: 11px;
-      letter-spacing: 0.1em;
-      color: var(--muted);
-    }
-
-    .stat-item { display: flex; flex-direction: column; gap: 4px; }
-    .stat-val { font-size: 18px; color: var(--accent); font-family: var(--font-display); font-weight: 700; }
-    .stat-label { text-transform: uppercase; }
-
-    .drop-zone {
-      border: 1px dashed var(--accent);
-      background: rgba(0,136,255,0.02);
-      padding: 56px 24px;
-      text-align: center;
-      cursor: pointer;
-      position: relative;
-      transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
-      margin-bottom: 32px;
-    }
-
-    .drop-zone:hover, .drop-zone.drag-over {
-      background: rgba(0,136,255,0.06);
-      box-shadow: 0 0 40px rgba(0,136,255,0.08), inset 0 0 40px rgba(0,136,255,0.04);
-    }
-
-    .drop-zone input[type="file"] {
-      position: absolute;
-      inset: 0;
-      opacity: 0;
-      cursor: pointer;
-      width: 100%;
-      height: 100%;
-    }
-
-    .drop-icon {
-      font-size: 42px;
-      margin-bottom: 16px;
-      display: block;
-      filter: drop-shadow(0 0 12px rgba(0,136,255,0.6));
-    }
-
-    .drop-title {
-      font-family: var(--font-display);
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--accent);
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      margin-bottom: 8px;
-    }
-
-    .drop-sub { font-size: 11px; color: var(--muted); letter-spacing: 0.1em; }
-    .drop-sub span { color: var(--accent2); }
-
-    .queue { display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
-
-    .queue-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 16px;
-      border: 1px solid var(--border);
-      background: var(--surface);
-      font-size: 12px;
-      animation: slideIn 0.2s ease;
-    }
-
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateY(-6px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    .queue-item.too-large { border-color: var(--danger); background: rgba(255,51,85,0.04); }
-
-    .queue-type {
-      width: 36px; height: 36px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 18px; flex-shrink: 0;
-      background: rgba(255,255,255,0.02);
-      border: 1px solid var(--border);
-    }
-
-    .queue-info { flex: 1; min-width: 0; }
-    .queue-name { color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .queue-size { color: var(--muted); font-size: 11px; margin-top: 2px; }
-    .queue-size.over { color: var(--danger); }
-
-    .queue-remove {
-      background: none; border: 1px solid var(--border);
-      color: var(--danger); cursor: pointer;
-      padding: 4px 8px; font-family: var(--font-mono);
-      font-size: 11px; transition: background 0.15s; flex-shrink: 0;
-    }
-    .queue-remove:hover { background: rgba(255,51,85,0.1); }
-
-    .upload-btn {
-      width: 100%; padding: 16px;
-      background: var(--accent); color: #fff;
-      border: none; font-family: var(--font-display);
-      font-size: 13px; font-weight: 700;
-      letter-spacing: 0.2em; text-transform: uppercase;
-      cursor: pointer; transition: box-shadow 0.2s, transform 0.1s;
-      margin-bottom: 40px;
-    }
-
-    .upload-btn:hover:not(:disabled) { box-shadow: 0 0 30px rgba(0,136,255,0.5); transform: translateY(-1px); }
-    .upload-btn:disabled { background: var(--muted); cursor: not-allowed; color: #333; }
-
-    .progress-wrap { margin-bottom: 40px; display: none; }
-    .progress-wrap.active { display: block; }
-
-    .progress-label { font-size: 11px; color: var(--muted); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 8px; }
-    .progress-label span { color: var(--accent); }
-
-    .progress-bar-track { height: 3px; background: var(--border); overflow: hidden; }
-    .progress-bar-fill {
-      height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2));
-      width: 0%; transition: width 0.3s ease;
-      box-shadow: 0 0 12px rgba(0,136,255,0.7);
-    }
-
-    .results { display: flex; flex-direction: column; gap: 10px; margin-bottom: 48px; }
-
-    .result-card { border: 1px solid var(--border); background: var(--surface); padding: 16px; animation: slideIn 0.25s ease; }
-    .result-card.success { border-left: 3px solid var(--accent); }
-    .result-card.error   { border-left: 3px solid var(--danger); }
-
-    .result-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-    .result-icon { font-size: 16px; }
-    .result-name { flex: 1; font-size: 12px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-    .result-badge { font-size: 10px; padding: 3px 8px; letter-spacing: 0.1em; text-transform: uppercase; border: 1px solid; }
-    .result-badge.ok  { color: var(--accent); border-color: var(--accent); }
-    .result-badge.err { color: var(--danger);  border-color: var(--danger); }
-
-    .result-url-wrap { display: flex; gap: 8px; align-items: center; }
-
-    .result-url {
-      flex: 1; background: rgba(0,0,0,0.4); border: 1px solid var(--border);
-      padding: 8px 12px; font-family: var(--font-mono); font-size: 11px;
-      color: var(--accent2); white-space: nowrap; overflow: hidden;
-      text-overflow: ellipsis; cursor: text; user-select: all;
-    }
-
-    .copy-btn {
-      background: none; border: 1px solid var(--accent); color: var(--accent);
-      font-family: var(--font-mono); font-size: 11px; padding: 8px 14px;
-      cursor: pointer; letter-spacing: 0.1em; transition: background 0.15s;
-      white-space: nowrap; flex-shrink: 0;
-    }
-    .copy-btn:hover { background: rgba(0,136,255,0.1); }
-    .copy-btn.copied { color: var(--accent2); border-color: var(--accent2); }
-
-    .result-meta { display: flex; gap: 16px; margin-top: 10px; font-size: 10px; color: var(--muted); letter-spacing: 0.08em; flex-wrap: wrap; }
-    .result-meta span { color: var(--text); }
-
-    .delete-token-wrap { margin-top: 8px; display: flex; gap: 8px; align-items: center; }
-    .token-label { font-size: 10px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap; }
-
-    .token-val {
-      flex: 1; background: rgba(255,51,85,0.05); border: 1px solid rgba(255,51,85,0.2);
-      padding: 6px 10px; font-family: var(--font-mono); font-size: 10px; color: var(--danger);
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: text; user-select: all;
-    }
-
-    .copy-token-btn {
-      background: none; border: 1px solid rgba(255,51,85,0.3); color: var(--danger);
-      font-family: var(--font-mono); font-size: 10px; padding: 6px 10px;
-      cursor: pointer; transition: background 0.15s; white-space: nowrap; flex-shrink: 0;
-    }
-    .copy-token-btn:hover { background: rgba(255,51,85,0.08); }
-
-    .section-title {
-      font-family: var(--font-display); font-size: 11px; font-weight: 700;
-      letter-spacing: 0.2em; color: var(--muted); text-transform: uppercase;
-      margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border);
-    }
-    .section-title::before { content: '// '; color: var(--accent); }
-
-    .recent-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
-
-    .recent-card {
-      border: 1px solid var(--border); background: var(--surface);
-      overflow: hidden; transition: border-color 0.2s;
-      cursor: pointer; text-decoration: none; display: block;
-    }
-    .recent-card:hover { border-color: var(--accent); }
-
-    .recent-thumb { width: 100%; height: 120px; object-fit: cover; display: block; background: var(--bg); }
-    .recent-thumb-placeholder { width: 100%; height: 120px; display: flex; align-items: center; justify-content: center; font-size: 36px; background: rgba(0,0,0,0.3); }
-    .recent-info { padding: 10px 12px; border-top: 1px solid var(--border); }
-    .recent-name { font-size: 11px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
-    .recent-meta { font-size: 10px; color: var(--muted); display: flex; justify-content: space-between; }
-    .recent-views { color: var(--accent2); }
-
-    footer {
-      margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--border);
-      font-size: 11px; color: var(--muted); letter-spacing: 0.1em;
-      display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
-    }
-    footer a { color: var(--accent); text-decoration: none; }
-    footer a:hover { text-decoration: underline; }
-
-    .toast {
-      position: fixed; bottom: 24px; left: 24px;
-      background: var(--surface); border: 1px solid var(--accent);
-      color: var(--accent); font-family: var(--font-mono);
-      font-size: 12px; padding: 12px 20px; letter-spacing: 0.1em;
-      z-index: 10000; box-shadow: 0 0 30px rgba(0,136,255,0.25);
-      animation: slideIn 0.2s ease; max-width: 300px;
-    }
-    .toast.error { border-color: var(--danger); color: var(--danger); box-shadow: 0 0 30px rgba(255,51,85,0.2); }
-
-    .blink { animation: blink 1s step-end infinite; color: var(--accent); }
-    @keyframes blink { 50% { opacity: 0; } }
-
-    @media (max-width: 540px) {
-      .stats-bar { gap: 16px; }
-      .result-url-wrap { flex-direction: column; }
-      .result-url { width: 100%; }
-      .recent-grid { grid-template-columns: repeat(2, 1fr); }
-      .terms-btn-row { flex-direction: column; }
-      .nav-menu-btn { top: 14px; right: 14px; }
-      .ai-panel { width: calc(100vw - 32px); right: 16px; }
-      .ai-fab { right: 16px; bottom: 20px; }
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TRASHCORE — Media Host</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  /* ═══════════════════════════════════════════════════════════
+     TOKENS — flat, plain, utilitarian. Cream paper + ink + one
+     trash-orange accent. No glow, no gradients, no blur.
+  ═══════════════════════════════════════════════════════════ */
+  :root{
+    --bg:#f1ead6;
+    --paper:#fbf6e9;
+    --ink:#1c1a14;
+    --muted:#8a8267;
+    --line:#1c1a14;
+    --line-soft:#d8cfb2;
+    --accent:#c1441c;      /* trash-orange */
+    --accent-ink:#fff8ee;
+    --link:#1c4fa0;        /* plain hyperlink blue */
+    --danger:#b3261e;
+    --font-body:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+    --font-display:'Space Grotesk',sans-serif;
+    --font-mono:'JetBrains Mono',monospace;
+  }
+  [data-theme="dark"]{
+    --bg:#17150f;
+    --paper:#201d15;
+    --ink:#efe6cd;
+    --muted:#8c8468;
+    --line:#efe6cd;
+    --line-soft:#3a3627;
+    --accent:#e2632f;
+    --accent-ink:#17150f;
+    --link:#7fa8ec;
+    --danger:#e2544a;
+  }
+
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html,body{background:var(--bg);color:var(--ink);font-family:var(--font-body);}
+  body{font-size:14px;line-height:1.5;}
+  a{color:var(--link);}
+  ::selection{background:var(--accent);color:var(--accent-ink);}
+
+  button,input{font-family:inherit;font-size:inherit;color:inherit;}
+
+  /* ═══ TERMS GATE ═══ */
+  #termsScreen{
+    position:fixed;inset:0;background:var(--bg);z-index:7000;
+    display:none;align-items:center;justify-content:center;padding:20px;
+  }
+  #termsScreen.visible{display:flex;}
+  .terms-box{width:100%;max-width:520px;background:var(--paper);border:1.5px solid var(--line);}
+  .terms-header{padding:16px 20px;border-bottom:1.5px solid var(--line);display:flex;align-items:center;gap:10px;}
+  .terms-header-title{font-family:var(--font-display);font-weight:700;font-size:15px;}
+  .terms-header-sub{font-size:11px;color:var(--muted);}
+  .terms-body{padding:16px 20px;max-height:300px;overflow-y:auto;font-size:12.5px;line-height:1.7;color:var(--ink);}
+  .terms-body h4{font-family:var(--font-display);font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--accent);margin:14px 0 4px;}
+  .terms-body h4:first-child{margin-top:0;}
+  .terms-body p{margin-bottom:4px;}
+  .terms-body ul{padding-left:18px;margin-bottom:4px;}
+  .terms-body strong{color:var(--ink);}
+  .terms-body .warn-text{color:var(--danger);}
+  .terms-footer{padding:14px 20px;border-top:1.5px solid var(--line);display:flex;flex-direction:column;gap:10px;}
+  .terms-checkbox-row{display:flex;gap:8px;align-items:flex-start;font-size:12px;cursor:pointer;}
+  .terms-checkbox-row input{accent-color:var(--accent);width:14px;height:14px;margin-top:2px;flex-shrink:0;cursor:pointer;}
+  .terms-btn-row{display:flex;gap:8px;}
+  .btn{border:1.5px solid var(--line);background:var(--paper);color:var(--ink);padding:10px 16px;cursor:pointer;font-family:var(--font-display);font-weight:700;font-size:12px;letter-spacing:.02em;}
+  .btn:hover:not(:disabled){background:var(--line);color:var(--paper);}
+  .btn:disabled{opacity:.4;cursor:not-allowed;}
+  .btn.primary{flex:1;background:var(--accent);border-color:var(--accent);color:var(--accent-ink);}
+  .btn.primary:hover:not(:disabled){background:var(--ink);border-color:var(--ink);color:var(--paper);}
+  .btn.danger{border-color:var(--danger);color:var(--danger);background:none;}
+  .btn.danger:hover{background:var(--danger);color:#fff;}
+
+  /* ═══ TOP BAR — plain pipe-nav, catbox-style ═══ */
+  .topbar{
+    border-bottom:1.5px solid var(--line);
+    padding:10px 20px;
+    display:flex;align-items:center;justify-content:space-between;
+    flex-wrap:wrap;gap:8px;
+    font-size:12px;
+  }
+  .topbar-brand{display:flex;align-items:center;gap:8px;font-family:var(--font-display);font-weight:700;font-size:15px;}
+  .topbar-brand .mark{font-size:17px;}
+  .topbar-links{display:flex;flex-wrap:wrap;align-items:center;gap:0;}
+  .topbar-links button, .topbar-links a{
+    background:none;border:none;color:var(--link);cursor:pointer;
+    padding:2px 8px;font-size:12px;text-decoration:none;
+  }
+  .topbar-links button:hover, .topbar-links a:hover{text-decoration:underline;}
+  .topbar-links .sep{color:var(--muted);}
+
+  #app{display:none;}
+  #app.visible{display:block;}
+
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px 80px;}
+
+  .hero{padding:28px 0 18px;text-align:center;}
+  .hero-mark{font-size:34px;}
+  .hero-title{font-family:var(--font-display);font-weight:700;font-size:26px;letter-spacing:.01em;margin-top:6px;}
+  .hero-title .accent{color:var(--accent);}
+  .hero-tag{margin-top:6px;font-size:12.5px;color:var(--muted);}
+
+  .notice-line{
+    text-align:center;font-size:12px;color:var(--muted);
+    margin-bottom:20px;
+  }
+  .notice-line a{cursor:pointer;}
+  .notice-line span{color:var(--ink);}
+
+  .stats-line{
+    display:flex;justify-content:center;gap:22px;flex-wrap:wrap;
+    font-size:11.5px;color:var(--muted);
+    border-top:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft);
+    padding:8px 0;margin-bottom:26px;
+  }
+  .stats-line b{color:var(--ink);font-family:var(--font-mono);}
+
+  .drop-zone{
+    border:1.5px dashed var(--line);
+    background:var(--paper);
+    padding:38px 20px;text-align:center;cursor:pointer;
+    position:relative;margin-bottom:16px;
+  }
+  .drop-zone.drag-over{background:var(--line-soft);}
+  .drop-zone input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+  .drop-title{font-family:var(--font-display);font-weight:700;font-size:14px;}
+  .drop-sub{margin-top:6px;font-size:11.5px;color:var(--muted);}
+  .drop-sub b{color:var(--ink);}
+
+  .queue{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+  .queue-item{
+    display:flex;align-items:center;gap:10px;padding:8px 12px;
+    border:1px solid var(--line-soft);background:var(--paper);font-size:12px;
+  }
+  .queue-item.too-large{border-color:var(--danger);}
+  .queue-type{width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:14px;border:1px solid var(--line-soft);flex-shrink:0;}
+  .queue-info{flex:1;min-width:0;}
+  .queue-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .queue-size{color:var(--muted);font-size:10.5px;font-family:var(--font-mono);margin-top:1px;}
+  .queue-size.over{color:var(--danger);}
+  .queue-remove{background:none;border:1px solid var(--line-soft);color:var(--danger);cursor:pointer;padding:3px 7px;font-size:11px;flex-shrink:0;}
+  .queue-remove:hover{background:var(--danger);color:#fff;border-color:var(--danger);}
+
+  .upload-btn{width:100%;padding:12px;margin-bottom:28px;font-size:13px;}
+
+  .progress-wrap{margin-bottom:28px;display:none;}
+  .progress-wrap.active{display:block;}
+  .progress-label{font-size:11px;color:var(--muted);margin-bottom:6px;font-family:var(--font-mono);}
+  .progress-label b{color:var(--ink);}
+  .progress-bar-track{height:6px;background:var(--line-soft);border:1px solid var(--line);}
+  .progress-bar-fill{height:100%;background:var(--accent);width:0%;transition:width .2s linear;}
+
+  .results{display:flex;flex-direction:column;gap:10px;margin-bottom:32px;}
+  .result-card{border:1.5px solid var(--line-soft);background:var(--paper);padding:12px 14px;}
+  .result-card.success{border-left:4px solid var(--accent);}
+  .result-card.error{border-left:4px solid var(--danger);}
+  .result-header{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+  .result-name{flex:1;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .result-badge{font-size:9.5px;padding:2px 6px;border:1px solid;text-transform:uppercase;letter-spacing:.05em;}
+  .result-badge.ok{color:var(--accent);border-color:var(--accent);}
+  .result-badge.err{color:var(--danger);border-color:var(--danger);}
+  .result-url-wrap{display:flex;gap:6px;align-items:center;}
+  .result-url{
+    flex:1;background:var(--bg);border:1px solid var(--line-soft);
+    padding:7px 10px;font-family:var(--font-mono);font-size:11px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:text;user-select:all;
+  }
+  .copy-btn{border:1px solid var(--line);background:none;padding:7px 12px;font-size:11px;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+  .copy-btn:hover{background:var(--line);color:var(--paper);}
+  .copy-btn.copied{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);}
+  .result-meta{display:flex;gap:14px;margin-top:8px;font-size:10px;color:var(--muted);font-family:var(--font-mono);flex-wrap:wrap;}
+  .delete-token-wrap{margin-top:6px;display:flex;gap:6px;align-items:center;}
+  .token-label{font-size:10px;color:var(--muted);white-space:nowrap;}
+  .token-val{flex:1;background:var(--bg);border:1px solid var(--line-soft);padding:5px 8px;font-family:var(--font-mono);font-size:10px;color:var(--danger);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:text;user-select:all;}
+  .copy-token-btn{border:1px solid var(--danger);background:none;color:var(--danger);padding:5px 9px;font-size:10px;cursor:pointer;flex-shrink:0;}
+  .copy-token-btn:hover{background:var(--danger);color:#fff;}
+
+  .section-title{font-family:var(--font-display);font-weight:700;font-size:12px;letter-spacing:.03em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;padding-bottom:8px;border-bottom:1.5px solid var(--line);}
+
+  .recent-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;}
+  .recent-card{border:1px solid var(--line-soft);background:var(--paper);overflow:hidden;text-decoration:none;color:var(--ink);display:block;}
+  .recent-card:hover{border-color:var(--line);}
+  .recent-thumb{width:100%;height:110px;object-fit:cover;display:block;background:var(--bg);}
+  .recent-thumb-placeholder{width:100%;height:110px;display:flex;align-items:center;justify-content:center;font-size:30px;background:var(--bg);}
+  .recent-info{padding:8px 10px;border-top:1px solid var(--line-soft);}
+  .recent-name{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px;}
+  .recent-meta{font-size:10px;color:var(--muted);display:flex;justify-content:space-between;font-family:var(--font-mono);}
+  .recent-views{color:var(--accent);}
+
+  footer{margin-top:44px;padding-top:16px;border-top:1.5px solid var(--line);font-size:11px;color:var(--muted);text-align:center;}
+  footer a{color:var(--link);}
+
+  .toast{
+    position:fixed;bottom:20px;left:20px;background:var(--paper);
+    border:1.5px solid var(--line);padding:10px 16px;font-size:12px;
+    z-index:10000;max-width:280px;
+  }
+  .toast.error{border-color:var(--danger);color:var(--danger);}
+
+  .blink{animation:blink 1s step-end infinite;color:var(--accent);}
+  @keyframes blink{50%{opacity:0;}}
+
+  /* ═══ MODALS ═══ */
+  .modal-backdrop{position:fixed;inset:0;background:rgba(28,26,20,.55);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .15s;}
+  [data-theme="dark"] .modal-backdrop{background:rgba(0,0,0,.65);}
+  .modal-backdrop.open{opacity:1;pointer-events:all;}
+  .modal-box{width:100%;max-width:560px;max-height:78vh;background:var(--paper);border:1.5px solid var(--line);display:flex;flex-direction:column;}
+  .modal-header{padding:14px 20px;border-bottom:1.5px solid var(--line);display:flex;align-items:center;justify-content:space-between;}
+  .modal-title{font-family:var(--font-display);font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.03em;}
+  .modal-close{background:none;border:1px solid var(--line-soft);color:var(--muted);width:24px;height:24px;cursor:pointer;}
+  .modal-close:hover{border-color:var(--danger);color:var(--danger);}
+  .modal-body{padding:16px 20px;overflow-y:auto;font-size:12.5px;line-height:1.8;flex:1;}
+  .faq-item{border-bottom:1px solid var(--line-soft);padding:12px 0;}
+  .faq-item:first-child{padding-top:0;}
+  .faq-item:last-child{border-bottom:none;}
+  .faq-q{font-family:var(--font-display);font-weight:700;font-size:12px;margin-bottom:5px;display:flex;gap:8px;}
+  .faq-q::before{content:'Q:';color:var(--accent);flex-shrink:0;}
+  .faq-a{font-size:12px;line-height:1.7;padding-left:18px;color:var(--muted);}
+  .policy-section h4{font-family:var(--font-display);font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--accent);margin:14px 0 5px;}
+  .policy-section h4:first-child{margin-top:0;}
+  .policy-section p{margin-bottom:6px;}
+  .policy-section ul{padding-left:16px;margin-bottom:6px;}
+  .policy-section strong{color:var(--ink);}
+  .policy-section .warn{color:var(--danger);}
+
+  /* ═══ AI PANEL ═══ */
+  .ai-panel{
+    position:fixed;bottom:20px;right:20px;z-index:5900;
+    width:320px;max-width:calc(100vw - 32px);
+    background:var(--paper);border:1.5px solid var(--line);
+    display:flex;flex-direction:column;max-height:440px;
+    opacity:0;pointer-events:none;transform:translateY(10px);
+    transition:opacity .15s, transform .15s;
+  }
+  .ai-panel.open{opacity:1;pointer-events:all;transform:translateY(0);}
+  .ai-panel-header{padding:10px 14px;border-bottom:1.5px solid var(--line);display:flex;align-items:center;gap:8px;}
+  .ai-panel-title{font-family:var(--font-display);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.03em;flex:1;}
+  .ai-panel-close{background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;}
+  .ai-panel-close:hover{color:var(--danger);}
+  .ai-messages{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;}
+  .ai-msg{max-width:88%;font-size:12px;line-height:1.6;}
+  .ai-msg.bot{align-self:flex-start;background:var(--bg);border:1px solid var(--line-soft);padding:8px 11px;}
+  .ai-msg.user{align-self:flex-end;background:var(--accent);color:var(--accent-ink);padding:8px 11px;}
+  .ai-msg-label{font-size:9px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;opacity:.6;}
+  .ai-typing{align-self:flex-start;display:flex;gap:4px;padding:10px 12px;background:var(--bg);border:1px solid var(--line-soft);}
+  .ai-typing span{width:5px;height:5px;background:var(--accent);border-radius:50%;animation:typingDot 1.2s ease-in-out infinite;}
+  .ai-typing span:nth-child(2){animation-delay:.2s;}
+  .ai-typing span:nth-child(3){animation-delay:.4s;}
+  @keyframes typingDot{0%,80%,100%{transform:scale(1);opacity:.5;}40%{transform:scale(1.3);opacity:1;}}
+  .ai-quick-btns{display:flex;flex-wrap:wrap;gap:5px;padding:0 12px 8px;}
+  .ai-quick-btn{background:none;border:1px solid var(--line-soft);color:var(--link);font-size:10px;padding:4px 8px;cursor:pointer;}
+  .ai-quick-btn:hover{border-color:var(--link);}
+  .ai-input-row{padding:10px 12px;border-top:1.5px solid var(--line);display:flex;gap:6px;}
+  .ai-input{flex:1;background:var(--bg);border:1px solid var(--line-soft);padding:7px 10px;outline:none;font-size:12px;}
+  .ai-input:focus{border-color:var(--line);}
+
+  @media (max-width:540px){
+    .topbar{padding:8px 14px;}
+    .wrap{padding:0 14px 70px;}
+    .terms-btn-row{flex-direction:column;}
+    .result-url-wrap{flex-direction:column;}
+    .result-url{width:100%;}
+    .recent-grid{grid-template-columns:repeat(2,1fr);}
+    .ai-panel{width:calc(100vw - 28px);right:14px;bottom:14px;}
+  }
+</style>
 </head>
 <body>
 
-<!-- ══ BOOT SCREEN — Spinner ══ -->
-<div id="bootScreen">
-  <div class="boot-logo">TRASH<span>CORE</span></div>
-  <div class="boot-subtitle">Media Hosting System v2.0<span class="blink">_</span></div>
-
-  <div class="boot-spinner-wrap">
-    <svg class="boot-spinner-svg" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="spinGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" style="stop-color:#0088ff;" />
-          <stop offset="100%" style="stop-color:#00ccff;" />
-        </linearGradient>
-      </defs>
-      <circle class="boot-spinner-track" cx="60" cy="60" r="56" />
-      <circle class="boot-spinner-fill" id="spinnerArc" cx="60" cy="60" r="56" />
-    </svg>
-    <div style="text-align:center;">
-      <div class="boot-pct-label" id="bootPctLabel">0%</div>
-      <div class="boot-pct-sub">Loading</div>
-    </div>
-  </div>
-
-  <div class="boot-status-text" id="bootStatusText">
-    Initializing <span>TRASHCORE</span>...
-  </div>
-</div>
-
-<!-- ══ TERMS SCREEN ══ -->
+<!-- ═══ TERMS GATE ═══ -->
 <div id="termsScreen">
   <div class="terms-box">
     <div class="terms-header">
-      <span class="terms-header-icon">⚠</span>
       <div>
         <div class="terms-header-title">Terms of Service</div>
-        <div class="terms-header-sub">Read carefully before proceeding</div>
+        <div class="terms-header-sub">Read before you upload anything</div>
       </div>
     </div>
     <div class="terms-body">
       <h4>1. Acceptance</h4>
-      <p>By using Trashcore Media Host you agree to these terms. If you disagree, do not use this service.</p>
-
-      <h4>2. Permitted Content</h4>
-      <p>You may upload images, videos, and audio files for personal or public sharing. You must own or have rights to all content you upload.</p>
-
-      <h4>3. Prohibited Content</h4>
+      <p>By using Trashcore you agree to these terms. If you disagree, do not use this service.</p>
+      <h4>2. Permitted content</h4>
+      <p>Images, videos, and audio for personal or public sharing. You must own or have rights to anything you upload.</p>
+      <h4>3. Prohibited content</h4>
       <ul>
         <li class="warn-text">No illegal content of any kind</li>
         <li class="warn-text">No CSAM or exploitation material</li>
         <li class="warn-text">No malware, exploits, or harmful files</li>
         <li>No copyrighted content without permission</li>
-        <li>No content that violates third-party rights</li>
       </ul>
-
-      <h4>4. File Limits</h4>
-      <p>Maximum file size is <strong>50MB</strong> per file. Up to 10 files per upload. Supported: images, videos, and audio only.</p>
-
-      <h4>5. Storage & Deletion</h4>
-      <p>Files may be removed at any time without notice. Save your delete tokens — they are the only way to remove your files. Trashcore is not liable for lost data.</p>
-
+      <h4>4. File limits</h4>
+      <p>Max <strong>50MB</strong> per file, up to 10 files per upload.</p>
+      <h4>5. Storage &amp; deletion</h4>
+      <p>Files can be removed at any time without notice. Save your delete token — it's the only way to remove your file.</p>
       <h4>6. Privacy</h4>
-      <p>Your IP address is logged for abuse prevention. Uploaded files with public URLs are accessible to anyone with the link.</p>
-
-      <h4>7. Liability</h4>
-      <p>Trashcore is provided as-is with no warranties. We are not responsible for content uploaded by users. Violations may result in immediate removal and a ban.</p>
-
-      <h4>8. Changes</h4>
-      <p>These terms may change at any time. Continued use constitutes acceptance of the updated terms.</p>
+      <p>Your IP is logged for abuse prevention. Uploaded files are public to anyone with the link.</p>
     </div>
     <div class="terms-footer">
       <label class="terms-checkbox-row">
         <input type="checkbox" id="termsCheck" onchange="onTermsCheck()" />
-        I have read and agree to the Trashcore Terms of Service. I confirm I will not upload illegal or prohibited content.
+        I've read and agree to the Terms of Service. I won't upload illegal or prohibited content.
       </label>
       <div class="terms-btn-row">
-        <button class="terms-agree-btn" id="agreeBtn" disabled onclick="agreeTerms()">✓ &nbsp;AGREE &amp; CONTINUE</button>
-        <button class="terms-decline-btn" onclick="declineTerms()">DECLINE</button>
+        <button class="btn primary" id="agreeBtn" disabled onclick="agreeTerms()">Agree &amp; continue</button>
+        <button class="btn danger" onclick="declineTerms()">Decline</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ══ THEME TOGGLE ══ -->
-<button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()" title="Toggle light/dark mode">🌙</button>
-
-<!-- ══ NAV MENU BUTTON (always visible after boot) ══ -->
-<button class="nav-menu-btn" id="navMenuBtn" style="display:none;" onclick="toggleNav()">
-  <div class="bar"></div>
-  <div class="bar"></div>
-  <div class="bar"></div>
-</button>
-
-<!-- ══ NAV OVERLAY ══ -->
-<div class="nav-overlay" id="navOverlay" onclick="closeNav()"></div>
-
-<!-- ══ NAV DRAWER ══ -->
-<div class="nav-drawer" id="navDrawer">
-  <div class="nav-drawer-header">
-    <div>
-      <div class="nav-drawer-logo">TRASH<span>CORE</span></div>
-      <div class="nav-drawer-sub">Media Hosting System</div>
-    </div>
-  </div>
-  <div class="nav-items">
-    <div class="nav-section-label">Information</div>
-    <button class="nav-item" onclick="openModal('faq'); closeNav();">
-      <div class="nav-item-icon">?</div>
-      <div class="nav-item-text">
-        <span class="nav-item-name">FAQ</span>
-        <span class="nav-item-desc">Frequently asked questions</span>
-      </div>
-    </button>
-    <button class="nav-item" onclick="openModal('policy'); closeNav();">
-      <div class="nav-item-icon">📋</div>
-      <div class="nav-item-text">
-        <span class="nav-item-name">Privacy Policy</span>
-        <span class="nav-item-desc">How we handle your data</span>
-      </div>
-    </button>
-    <button class="nav-item" onclick="openModal('about'); closeNav();">
-      <div class="nav-item-icon">⬡</div>
-      <div class="nav-item-text">
-        <span class="nav-item-name">About</span>
-        <span class="nav-item-desc">What is TRASHCORE?</span>
-      </div>
-    </button>
-    <div class="nav-divider"></div>
-    <div class="nav-section-label">Contact & Support</div>
-    <a class="nav-item" href="https://wa.me/254787909276" target="_blank" rel="noopener" onclick="closeNav();">
-      <div class="nav-item-icon">💬</div>
-      <div class="nav-item-text">
-        <span class="nav-item-name">WhatsApp</span>
-        <span class="nav-item-desc">+254 787 909 276</span>
-      </div>
-    </a>
-    <a class="nav-item" href="https://t.me/trashcoredev2" target="_blank" rel="noopener" onclick="closeNav();">
-      <div class="nav-item-icon">✈</div>
-      <div class="nav-item-text">
-        <span class="nav-item-name">Telegram</span>
-        <span class="nav-item-desc">@trashcoredev2</span>
-      </div>
-    </a>
-    <div class="nav-divider"></div>
-    <div class="nav-section-label">Tools</div>
-    <button class="nav-item" onclick="openModal('delete'); closeNav();">
-      <div class="nav-item-icon">🗑</div>
-      <div class="nav-item-text">
-        <span class="nav-item-name">Delete a File</span>
-        <span class="nav-item-desc">Remove using delete token</span>
-      </div>
-    </button>
-    <button class="nav-item" onclick="toggleAI(); closeNav();">
-      <div class="nav-item-icon">🤖</div>
-      <div class="nav-item-text">
-        <span class="nav-item-name">AI Assistant</span>
-        <span class="nav-item-desc">Ask questions about this site</span>
-      </div>
-    </button>
-    <button class="nav-item" id="themeNavItem" onclick="toggleTheme(); closeNav();">
-      <div class="nav-item-icon" id="themeNavIcon">🌙</div>
-      <div class="nav-item-text">
-        <span class="nav-item-name" id="themeNavLabel">Light Mode</span>
-        <span class="nav-item-desc" id="themeNavDesc">Switch to a brighter theme</span>
-      </div>
-    </button>
-  </div>
-  <div class="nav-drawer-footer">TRASHCORE v2.0 · 2025</div>
-</div>
-
-<!-- ══ FAQ MODAL ══ -->
+<!-- ═══ MODALS ═══ -->
 <div class="modal-backdrop" id="modal-faq">
   <div class="modal-box">
-    <div class="modal-header">
-      <div class="modal-title">// FAQ</div>
-      <button class="modal-close" onclick="closeModal('faq')">✕</button>
-    </div>
+    <div class="modal-header"><div class="modal-title">FAQ</div><button class="modal-close" onclick="closeModal('faq')">✕</button></div>
     <div class="modal-body">
-      <div class="faq-item">
-        <div class="faq-q">What is TRASHCORE?</div>
-        <div class="faq-a">TRASHCORE is a fast, anonymous media hosting service. Upload images, videos, and audio — get a permanent public link instantly. No account required.</div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-q">How large can my files be?</div>
-        <div class="faq-a">Each file can be up to <strong>50MB</strong>. You can upload up to 10 files in one batch. Supported types: images, videos, and audio.</div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-q">How do I delete my file?</div>
-        <div class="faq-a">After uploading, you receive a <strong>delete token</strong>. Save it — it is the only way to delete your file. Use the "Delete a File" tool in the menu and enter your token.</div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-q">Are uploaded files private?</div>
-        <div class="faq-a">No. All uploaded files are publicly accessible via their URL. Anyone with the link can view the file. Do not upload private or sensitive content.</div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-q">How long are files stored?</div>
-        <div class="faq-a">Files may be stored indefinitely, but we reserve the right to remove files at any time without notice — especially those violating our terms.</div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-q">Is my IP address logged?</div>
-        <div class="faq-a">Yes. Your IP is logged for abuse prevention purposes. This data is not sold or shared with third parties except when legally required.</div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-q">What file types are supported?</div>
-        <div class="faq-a">Images (jpg, png, gif, webp, etc.), Videos (mp4, webm, mov, etc.), and Audio (mp3, wav, ogg, etc.). Other file types will be rejected.</div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-q">How do I report abuse?</div>
-        <div class="faq-a">Contact us via WhatsApp (+254 787 909 276) or Telegram (@trashcoredev2) with the file URL and reason. We respond as fast as possible.</div>
-      </div>
+      <div class="faq-item"><div class="faq-q">What is TRASHCORE?</div><div class="faq-a">A fast, anonymous media host. Upload images, video, or audio and get a permanent public link instantly. No account needed.</div></div>
+      <div class="faq-item"><div class="faq-q">How large can my files be?</div><div class="faq-a">Up to <strong>50MB</strong> per file, up to 10 files per batch.</div></div>
+      <div class="faq-item"><div class="faq-q">How do I delete my file?</div><div class="faq-a">Save the delete token you get after uploading, then use "Delete file" in the top bar.</div></div>
+      <div class="faq-item"><div class="faq-q">Are uploads private?</div><div class="faq-a">No — anyone with the link can view the file. Don't upload private or sensitive content.</div></div>
+      <div class="faq-item"><div class="faq-q">How long are files stored?</div><div class="faq-a">Indefinitely, in general — but we may remove files at any time, especially ones that break the rules.</div></div>
+      <div class="faq-item"><div class="faq-q">Is my IP logged?</div><div class="faq-a">Yes, for abuse prevention only. It's not sold or shared except when legally required.</div></div>
+      <div class="faq-item"><div class="faq-q">How do I report abuse?</div><div class="faq-a">Message us on WhatsApp or Telegram (links in the top bar) with the file URL and reason.</div></div>
     </div>
   </div>
 </div>
 
-<!-- ══ POLICY MODAL ══ -->
 <div class="modal-backdrop" id="modal-policy">
   <div class="modal-box">
-    <div class="modal-header">
-      <div class="modal-title">// Privacy Policy</div>
-      <button class="modal-close" onclick="closeModal('policy')">✕</button>
-    </div>
+    <div class="modal-header"><div class="modal-title">Privacy Policy</div><button class="modal-close" onclick="closeModal('policy')">✕</button></div>
     <div class="modal-body">
       <div class="policy-section">
-        <h4>Data We Collect</h4>
-        <p>When you use TRASHCORE, the following data may be collected:</p>
-        <ul>
-          <li>Your IP address (for abuse prevention)</li>
-          <li>File metadata (filename, size, type, upload timestamp)</li>
-          <li>View count per file</li>
-          <li>Browser/device type via User-Agent header</li>
-        </ul>
-
-        <h4>How We Use Your Data</h4>
-        <p>Collected data is used solely to:</p>
-        <ul>
-          <li>Operate and maintain the hosting service</li>
-          <li>Detect and prevent abuse, spam, and illegal content</li>
-          <li>Generate aggregate usage statistics</li>
-        </ul>
-
-        <h4>Data Sharing</h4>
-        <p>We do <strong>not</strong> sell your data. We may share data with:</p>
-        <ul>
-          <li>Law enforcement, when required by law</li>
-          <li>Cloud providers that power our infrastructure (processed securely)</li>
-        </ul>
-
-        <h4>Uploaded Content</h4>
-        <p>Files uploaded to TRASHCORE are <strong class="warn">publicly accessible</strong> to anyone with the link. Do not upload private, sensitive, or personally identifiable content.</p>
-
-        <h4>Delete Tokens</h4>
-        <p>Each upload generates a unique delete token. <strong>We do not store delete tokens in recoverable form</strong> — if you lose it, the file cannot be deleted by you. Store it safely.</p>
-
+        <h4>Data we collect</h4>
+        <ul><li>IP address (abuse prevention)</li><li>File metadata (name, size, type, timestamp)</li><li>View count per file</li></ul>
+        <h4>How it's used</h4>
+        <ul><li>Operating the service</li><li>Detecting abuse and illegal content</li><li>Aggregate usage stats</li></ul>
+        <h4>Sharing</h4>
+        <p>We don't sell your data. We may share it with law enforcement when legally required, and with the infrastructure providers that run the service.</p>
+        <h4>Uploaded content</h4>
+        <p><strong class="warn">Public by default</strong> — anyone with the link can view it.</p>
+        <h4>Delete tokens</h4>
+        <p>We don't store delete tokens in recoverable form. Lose it and the file can't be deleted by you.</p>
         <h4>Cookies</h4>
-        <p>TRASHCORE does not use tracking cookies. Your terms acceptance is stored in <code>localStorage</code> on your device only.</p>
-
-        <h4>Your Rights</h4>
-        <p>You may request deletion of your files at any time using your delete token. For other data removal requests, contact us via the channels listed in the menu.</p>
-
-        <h4>Changes</h4>
-        <p>This policy may be updated at any time. Continued use of the service constitutes acceptance of the updated policy.</p>
+        <p>No tracking cookies. Your theme and terms acceptance are stored in <code>localStorage</code> on your device only.</p>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ══ ABOUT MODAL ══ -->
 <div class="modal-backdrop" id="modal-about">
   <div class="modal-box">
-    <div class="modal-header">
-      <div class="modal-title">// About TRASHCORE</div>
-      <button class="modal-close" onclick="closeModal('about')">✕</button>
-    </div>
+    <div class="modal-header"><div class="modal-title">About</div><button class="modal-close" onclick="closeModal('about')">✕</button></div>
     <div class="modal-body">
       <div class="policy-section">
-        <h4>What is TRASHCORE?</h4>
-        <p>TRASHCORE is a fast, no-nonsense anonymous media hosting platform. No accounts, no sign-ups, no friction. Drop a file, get a link, share it anywhere.</p>
-
-        <h4>Why does it exist?</h4>
-        <p>Most file sharing platforms are cluttered with ads, require registration, or throttle downloads. TRASHCORE strips all of that away — pure upload, pure link.</p>
-
+        <h4>What is this?</h4>
+        <p>The trashiest free file host you've ever seen. No accounts, no sign-ups, no ads. Drop a file, get a link, share it anywhere.</p>
         <h4>Features</h4>
         <ul>
-          <li>Anonymous uploads — no account needed</li>
-          <li>Supports images, video, and audio</li>
+          <li>Anonymous uploads</li>
+          <li>Images, video, and audio</li>
           <li>Up to 50MB per file, 10 files per batch</li>
           <li>Permanent public URLs with view tracking</li>
-          <li>Delete token per upload for self-service removal</li>
-          <li>CDN-backed fast delivery</li>
+          <li>Delete token per upload</li>
         </ul>
-
         <h4>Built by</h4>
-        <p>TRASHCORE was created by <strong>Trashcore Dev</strong>.</p>
-        <ul>
-          <li>WhatsApp: <strong>+254 787 909 276</strong></li>
-          <li>Telegram: <strong>@trashcoredev2</strong></li>
-          <li>GitHub: <strong>Tennor-modz</strong></li>
-        </ul>
-
+        <p><strong>Trashcore Dev</strong> — WhatsApp <strong>+254 787 909 276</strong>, Telegram <strong>@trashcoredev2</strong>, GitHub <strong>Tennor-modz</strong>.</p>
         <h4>Version</h4>
-        <p>TRASHCORE Media Host <strong>v2.0.0</strong> — 2025</p>
+        <p>TRASHCORE Media Host <strong>v2.1.0</strong></p>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ══ DELETE FILE MODAL ══ -->
 <div class="modal-backdrop" id="modal-delete">
   <div class="modal-box">
-    <div class="modal-header">
-      <div class="modal-title">// Delete a File</div>
-      <button class="modal-close" onclick="closeModal('delete')">✕</button>
-    </div>
-    <div class="modal-body" style="padding-bottom: 24px;">
-      <div class="policy-section">
-        <h4>Enter Your Delete Token</h4>
-        <p>Paste the delete token you received after uploading your file. This action is <strong class="warn">permanent and cannot be undone</strong>.</p>
-      </div>
-      <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 12px;">
-        <input
-          type="text"
-          id="deleteTokenInput"
-          placeholder="Paste delete token here..."
-          style="background: rgba(0,0,0,0.4); border: 1px solid var(--border); color: var(--text); font-family: var(--font-mono); font-size: 12px; padding: 12px 16px; outline: none; letter-spacing: 0.05em; width: 100%;"
-          oninput="this.style.borderColor = this.value ? 'var(--danger)' : 'var(--border)'"
-        />
-        <button
-          onclick="doDeleteFile()"
-          style="background: var(--danger); border: none; color: #fff; font-family: var(--font-display); font-size: 12px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; padding: 14px; cursor: pointer; transition: box-shadow 0.2s;"
-          onmouseover="this.style.boxShadow='0 0 24px rgba(255,51,85,0.5)'"
-          onmouseout="this.style.boxShadow='none'"
-        >
-          🗑 &nbsp;DELETE FILE
-        </button>
-        <div id="deleteResult" style="font-size: 12px; text-align: center; letter-spacing: 0.08em; display: none;"></div>
+    <div class="modal-header"><div class="modal-title">Delete a file</div><button class="modal-close" onclick="closeModal('delete')">✕</button></div>
+    <div class="modal-body">
+      <p style="margin-bottom:14px;">Paste the delete token you got after uploading. This is <strong class="warn" style="color:var(--danger)">permanent</strong>.</p>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <input type="text" id="deleteTokenInput" placeholder="Paste delete token here…" style="background:var(--bg);border:1px solid var(--line-soft);padding:10px 12px;outline:none;font-family:var(--font-mono);font-size:12px;width:100%;" oninput="this.style.borderColor=this.value?'var(--danger)':'var(--line-soft)'" />
+        <button class="btn danger" onclick="doDeleteFile()" style="background:var(--danger);color:#fff;">Delete file</button>
+        <div id="deleteResult" style="font-size:12px;text-align:center;display:none;"></div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ══ MAIN APP ══ -->
-<div id="app">
-<div class="wrap">
-  <header>
-    <div class="header-brand">
-      <div class="logo">TRASH<span>CORE</span></div>
-      <div class="tagline">fast. anonymous. permanent media hosting<span class="blink">_</span></div>
-    </div>
-  </header>
-
-  <div class="stats-bar">
-    <div class="stat-item"><div class="stat-val" id="statFiles">—</div><div class="stat-label">Files Hosted</div></div>
-    <div class="stat-item"><div class="stat-val" id="statSize">—</div><div class="stat-label">Total Size</div></div>
-    <div class="stat-item"><div class="stat-val" id="statViews">—</div><div class="stat-label">Total Views</div></div>
-    <div class="stat-item"><div class="stat-val" id="statMax">—</div><div class="stat-label">Max File Size</div></div>
-  </div>
-
-  <div class="drop-zone" id="dropZone">
-    <input type="file" id="fileInput" multiple accept="image/*,video/*,audio/*" />
-    <span class="drop-icon">⬡</span>
-    <div class="drop-title">Drop files here or click to browse</div>
-    <div class="drop-sub">Images · Videos · Audio &nbsp;|&nbsp; Max <span id="maxSizeLabel">50MB</span> per file</div>
-  </div>
-
-  <div class="queue" id="queue"></div>
-  <button class="upload-btn" id="uploadBtn" disabled>⬆ UPLOAD FILES</button>
-
-  <div class="progress-wrap" id="progressWrap">
-    <div class="progress-label">Uploading<span class="blink">_</span> <span id="progressPct">0%</span></div>
-    <div class="progress-bar-track"><div class="progress-bar-fill" id="progressFill"></div></div>
-  </div>
-
-  <div class="results" id="results"></div>
-
-  <div id="recentSection" style="display:none">
-    <div class="section-title">Recent Uploads</div>
-    <div class="recent-grid" id="recentGrid"></div>
-  </div>
-
-  <footer>
-    <span>TRASHCORE MEDIA HOST &copy; 2025 — Created by <a href="https://github.com/Tennor-modz" target="_blank">Trashcore</a></span>
-    <span>v2.0.0</span>
-  </footer>
-</div>
-</div>
-
-<!-- ══ AI ASSISTANT FAB ══ -->
-<button class="ai-fab" id="aiFab" style="display:none;" onclick="toggleAI()" title="AI Assistant">
-  <span class="ai-fab-label">AI Assistant</span>
-  🤖
-</button>
-
-<!-- ══ AI PANEL ══ -->
+<!-- ═══ AI PANEL ═══ -->
 <div class="ai-panel" id="aiPanel">
   <div class="ai-panel-header">
-    <div class="ai-panel-dot"></div>
-    <div class="ai-panel-title">TRASHCORE AI</div>
+    <div class="ai-panel-title">Trashcore AI</div>
     <button class="ai-panel-close" onclick="toggleAI()">✕</button>
   </div>
   <div class="ai-messages" id="aiMessages">
-    <div class="ai-msg bot">
-      <div class="ai-msg-label">AI Assistant</div>
-      Hey! I'm the TRASHCORE AI. Ask me anything about how this site works — uploads, file limits, deletion, privacy, or anything else. 💙
-    </div>
+    <div class="ai-msg bot"><div class="ai-msg-label">AI Assistant</div>Hey — ask me about uploads, file limits, deletion, or privacy.</div>
   </div>
   <div class="ai-quick-btns" id="aiQuickBtns">
     <button class="ai-quick-btn" onclick="aiAsk('How do I upload a file?')">How to upload?</button>
     <button class="ai-quick-btn" onclick="aiAsk('What is the file size limit?')">File size limit?</button>
     <button class="ai-quick-btn" onclick="aiAsk('How do I delete my file?')">Delete a file?</button>
     <button class="ai-quick-btn" onclick="aiAsk('Is my upload private?')">Is it private?</button>
-    <button class="ai-quick-btn" onclick="aiAsk('How do I contact support?')">Contact support?</button>
   </div>
   <div class="ai-input-row">
-    <input class="ai-input" id="aiInput" type="text" placeholder="Ask something..." onkeydown="if(event.key==='Enter') aiSend()" />
-    <button class="ai-send-btn" onclick="aiSend()">SEND</button>
+    <input class="ai-input" id="aiInput" type="text" placeholder="Ask something…" onkeydown="if(event.key==='Enter') aiSend()" />
+    <button class="btn" onclick="aiSend()">Send</button>
+  </div>
+</div>
+
+<!-- ═══ MAIN APP ═══ -->
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-brand"><span class="mark">🗑</span> TRASH<span style="color:var(--accent)">CORE</span></div>
+    <div class="topbar-links">
+      <button onclick="openModal('faq')">FAQ</button><span class="sep">|</span>
+      <button onclick="openModal('policy')">Privacy</button><span class="sep">|</span>
+      <button onclick="openModal('about')">About</button><span class="sep">|</span>
+      <button onclick="openModal('delete')">Delete file</button><span class="sep">|</span>
+      <button onclick="toggleAI()">AI Assistant</button><span class="sep">|</span>
+      <a href="https://wa.me/254787909276" target="_blank" rel="noopener">WhatsApp</a><span class="sep">|</span>
+      <a href="https://t.me/trashcoredev2" target="_blank" rel="noopener">Telegram</a><span class="sep">|</span>
+      <button id="themeBtn" onclick="toggleTheme()">Dark mode</button>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="hero">
+      <div class="hero-mark">🗑</div>
+      <div class="hero-title">TRASH<span class="accent">CORE</span></div>
+      <div class="hero-tag">the trashiest free file host you've ever seen<span class="blink">_</span></div>
+    </div>
+
+    <div class="notice-line">Uploads up to <span id="maxSizeLabel">50MB</span> are allowed per file. You should read the <a onclick="openModal('faq')">FAQ</a>.</div>
+
+    <div class="stats-line">
+      <span><b id="statFiles">—</b> files hosted</span>
+      <span><b id="statSize">—</b> total size</span>
+      <span><b id="statViews">—</b> total views</span>
+      <span><b id="statMax">—</b> max file size</span>
+    </div>
+
+    <div class="drop-zone" id="dropZone">
+      <input type="file" id="fileInput" multiple accept="image/*,video/*,audio/*" />
+      <div class="drop-title">Drop files here, or click to browse</div>
+      <div class="drop-sub">Images · Videos · Audio &nbsp;—&nbsp; max <b id="maxSizeLabel2">50MB</b> each, up to 10 at once</div>
+    </div>
+
+    <div class="queue" id="queue"></div>
+    <button class="btn primary upload-btn" id="uploadBtn" disabled>Upload files</button>
+
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-label">Uploading… <b id="progressPct">0%</b></div>
+      <div class="progress-bar-track"><div class="progress-bar-fill" id="progressFill"></div></div>
+    </div>
+
+    <div class="results" id="results"></div>
+
+    <div id="recentSection" style="display:none">
+      <div class="section-title">Recent uploads</div>
+      <div class="recent-grid" id="recentGrid"></div>
+    </div>
+
+    <footer>
+      TRASHCORE MEDIA HOST · built by <a href="https://github.com/Tennor-modz" target="_blank">Trashcore</a> ·
+      <a onclick="openModal('faq')" style="cursor:pointer">FAQ</a> ·
+      <a onclick="openModal('policy')" style="cursor:pointer">Privacy</a> ·
+      v2.1.0
+    </footer>
   </div>
 </div>
 
@@ -1668,430 +477,235 @@
   const MAX_FILE_MB = 50;
   const MAX_FILE_BYTES = MAX_FILE_MB * 1024 * 1024;
 
-  // ══════════════════════════════════════════
-  // BOOT SEQUENCE — Spinning Circle (10 seconds)
-  // ══════════════════════════════════════════
-  const BOOT_DURATION = 10000;
-  const CIRCUMFERENCE = 2 * Math.PI * 56; // 351.86
-
-  const spinnerArc = document.getElementById('spinnerArc');
-  const bootPctLabel = document.getElementById('bootPctLabel');
-  const bootStatusText = document.getElementById('bootStatusText');
-
-  spinnerArc.style.strokeDasharray = CIRCUMFERENCE;
-  spinnerArc.style.strokeDashoffset = CIRCUMFERENCE;
-
-  const bootMessages = [
-    { at: 0,    text: 'Initializing <span>TRASHCORE</span>...' },
-    { at: 1500, text: 'Connecting to <span>API servers</span>...' },
-    { at: 3000, text: 'Loading <span>storage modules</span>...' },
-    { at: 4500, text: 'Applying <span>security filters</span>...' },
-    { at: 6000, text: 'Configuring <span>upload pipeline</span>...' },
-    { at: 7500, text: 'Rendering <span>interface</span>...' },
-    { at: 9000, text: 'All systems <span>operational</span>.' },
-  ];
-
-  bootMessages.forEach(m => {
-    setTimeout(() => { bootStatusText.innerHTML = m.text; }, m.at);
-  });
-
-  let startTime = Date.now();
-
-  function updateSpinner() {
-    const elapsed = Date.now() - startTime;
-    const pct = Math.min(100, Math.round((elapsed / BOOT_DURATION) * 100));
-    const offset = CIRCUMFERENCE - (pct / 100) * CIRCUMFERENCE;
-
-    spinnerArc.style.strokeDashoffset = offset;
-    bootPctLabel.textContent = pct + '%';
-
-    if (pct < 100) {
-      requestAnimationFrame(updateSpinner);
-    }
-  }
-
-  requestAnimationFrame(updateSpinner);
-
-  setTimeout(() => {
-    const bootScreen = document.getElementById('bootScreen');
-    bootScreen.classList.add('fade-out');
-    setTimeout(() => {
-      bootScreen.style.display = 'none';
-      document.getElementById('termsScreen').classList.add('visible');
-    }, 800);
-  }, BOOT_DURATION);
-
-  // ══════════════════════════════════════════
-  // TERMS
-  // ══════════════════════════════════════════
-  function onTermsCheck() {
+  /* ═══ TERMS GATE ═══ */
+  function onTermsCheck(){
     document.getElementById('agreeBtn').disabled = !document.getElementById('termsCheck').checked;
   }
-
-  function agreeTerms() {
+  function agreeTerms(){
+    localStorage.setItem('tc-agreed', '1');
+    document.getElementById('termsScreen').classList.remove('visible');
     document.getElementById('termsScreen').style.display = 'none';
+    startApp();
+  }
+  function declineTerms(){
+    document.getElementById('termsScreen').innerHTML = `
+      <div class="terms-box" style="text-align:center;padding:32px 20px;">
+        <div style="font-family:var(--font-display);font-weight:700;font-size:20px;color:var(--danger);margin-bottom:10px;">Access denied</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:18px;">You must agree to the terms to use Trashcore.</div>
+        <button class="btn" onclick="location.reload()">Restart</button>
+      </div>`;
+  }
+  function startApp(){
     document.getElementById('app').classList.add('visible');
-    document.getElementById('navMenuBtn').style.display = 'flex';
-    document.getElementById('themeToggleBtn').style.display = 'flex';
-    document.getElementById('aiFab').style.display = 'flex';
     loadStats();
     loadRecent();
   }
-
-  // ══════════════════════════════════════════
-  // THEME TOGGLE
-  // ══════════════════════════════════════════
-  (function initTheme() {
-    const saved = localStorage.getItem('tc-theme');
-    if (saved === 'light') applyTheme('light', false);
+  (function initGate(){
+    if (localStorage.getItem('tc-agreed') === '1') {
+      startApp();
+    } else {
+      document.getElementById('termsScreen').classList.add('visible');
+      document.getElementById('termsScreen').style.display = 'flex';
+    }
   })();
 
-  function applyTheme(mode, animate) {
+  /* ═══ THEME ═══ */
+  (function initTheme(){
+    const saved = localStorage.getItem('tc-theme');
+    if (saved === 'dark') applyTheme('dark');
+  })();
+  function applyTheme(mode){
     const html = document.documentElement;
-    const btn = document.getElementById('themeToggleBtn');
-    const navIcon = document.getElementById('themeNavIcon');
-    const navLabel = document.getElementById('themeNavLabel');
-    const navDesc = document.getElementById('themeNavDesc');
-
-    if (mode === 'light') {
-      html.setAttribute('data-theme', 'light');
-      if (btn) btn.textContent = '☀️';
-      if (navIcon) navIcon.textContent = '🌙';
-      if (navLabel) navLabel.textContent = 'Dark Mode';
-      if (navDesc) navDesc.textContent = 'Switch to the dark theme';
-      localStorage.setItem('tc-theme', 'light');
+    const btn = document.getElementById('themeBtn');
+    if (mode === 'dark'){
+      html.setAttribute('data-theme','dark');
+      if (btn) btn.textContent = 'Light mode';
+      localStorage.setItem('tc-theme','dark');
     } else {
       html.removeAttribute('data-theme');
-      if (btn) btn.textContent = '🌙';
-      if (navIcon) navIcon.textContent = '☀️';
-      if (navLabel) navLabel.textContent = 'Light Mode';
-      if (navDesc) navDesc.textContent = 'Switch to a brighter theme';
-      localStorage.setItem('tc-theme', 'dark');
-    }
-
-    if (animate && btn) {
-      btn.classList.add('spin');
-      setTimeout(() => btn.classList.remove('spin'), 350);
+      if (btn) btn.textContent = 'Dark mode';
+      localStorage.setItem('tc-theme','light');
     }
   }
-
-  function toggleTheme() {
-    const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
-    applyTheme(isDark ? 'light' : 'dark', true);
+  function toggleTheme(){
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    applyTheme(isDark ? 'light' : 'dark');
   }
 
-  function declineTerms() {
-    document.getElementById('termsScreen').innerHTML = `
-      <div style="text-align:center; font-family:var(--font-mono); color:var(--muted); padding:40px;">
-        <div style="font-family:var(--font-display);font-size:32px;color:var(--danger);margin-bottom:16px;">ACCESS DENIED</div>
-        <div style="font-size:12px;letter-spacing:0.15em;">You must agree to the terms to use Trashcore.</div>
-        <div style="margin-top:24px;">
-          <button onclick="location.reload()" style="background:none;border:1px solid var(--accent);color:var(--accent);font-family:var(--font-mono);font-size:12px;padding:10px 24px;cursor:pointer;letter-spacing:0.1em;">↺ RESTART</button>
-        </div>
-      </div>`;
-  }
-
-  // ══════════════════════════════════════════
-  // NAVIGATION
-  // ══════════════════════════════════════════
-  function toggleNav() {
-    const btn = document.getElementById('navMenuBtn');
-    const drawer = document.getElementById('navDrawer');
-    const overlay = document.getElementById('navOverlay');
-    const isOpen = drawer.classList.contains('open');
-    if (isOpen) {
-      closeNav();
-    } else {
-      btn.classList.add('open');
-      drawer.classList.add('open');
-      overlay.classList.add('open');
-    }
-  }
-
-  function closeNav() {
-    document.getElementById('navMenuBtn').classList.remove('open');
-    document.getElementById('navDrawer').classList.remove('open');
-    document.getElementById('navOverlay').classList.remove('open');
-  }
-
-  // ══════════════════════════════════════════
-  // MODALS
-  // ══════════════════════════════════════════
-  function openModal(id) {
-    document.getElementById('modal-' + id).classList.add('open');
-  }
-
-  function closeModal(id) {
-    document.getElementById('modal-' + id).classList.remove('open');
-  }
-
-  // Close modal on backdrop click
-  document.querySelectorAll('.modal-backdrop').forEach(el => {
-    el.addEventListener('click', function(e) {
-      if (e.target === this) this.classList.remove('open');
-    });
+  /* ═══ MODALS ═══ */
+  function openModal(id){ document.getElementById('modal-'+id).classList.add('open'); }
+  function closeModal(id){ document.getElementById('modal-'+id).classList.remove('open'); }
+  document.querySelectorAll('.modal-backdrop').forEach(el=>{
+    el.addEventListener('click', function(e){ if (e.target === this) this.classList.remove('open'); });
   });
 
-  // ══════════════════════════════════════════
-  // DELETE FILE
-  // ══════════════════════════════════════════
-  async function doDeleteFile() {
+  /* ═══ DELETE FILE ═══ */
+  async function doDeleteFile(){
     const token = document.getElementById('deleteTokenInput').value.trim();
     const resultEl = document.getElementById('deleteResult');
-    if (!token) {
-      resultEl.style.display = 'block';
-      resultEl.style.color = 'var(--danger)';
-      resultEl.textContent = '⚠ Please enter a delete token.';
+    if (!token){
+      resultEl.style.display='block'; resultEl.style.color='var(--danger)';
+      resultEl.textContent = 'Please enter a delete token.';
       return;
     }
-    resultEl.style.display = 'block';
-    resultEl.style.color = 'var(--muted)';
-    resultEl.textContent = 'Deleting...';
-    try {
-      const r = await fetch(`${API}/delete/${encodeURIComponent(token)}`, { method: 'DELETE' });
+    resultEl.style.display='block'; resultEl.style.color='var(--muted)';
+    resultEl.textContent = 'Deleting…';
+    try{
+      const r = await fetch(`${API}/delete/${encodeURIComponent(token)}`, { method:'DELETE' });
       const data = await r.json();
-      if (data.success || r.ok) {
-        resultEl.style.color = 'var(--accent)';
-        resultEl.textContent = '✓ File deleted successfully.';
-        document.getElementById('deleteTokenInput').value = '';
+      if (data.success || r.ok){
+        resultEl.style.color='var(--accent)';
+        resultEl.textContent = 'File deleted successfully.';
+        document.getElementById('deleteTokenInput').value='';
       } else {
-        resultEl.style.color = 'var(--danger)';
-        resultEl.textContent = '✗ ' + (data.error || 'Invalid token or file not found.');
+        resultEl.style.color='var(--danger)';
+        resultEl.textContent = data.error || 'Invalid token or file not found.';
       }
     } catch {
-      resultEl.style.color = 'var(--danger)';
-      resultEl.textContent = '✗ Network error. Please try again.';
+      resultEl.style.color='var(--danger)';
+      resultEl.textContent = 'Network error. Please try again.';
     }
   }
 
-  // ══════════════════════════════════════════
-  // AI ASSISTANT
-  // ══════════════════════════════════════════
+  /* ═══ AI ASSISTANT ═══ */
   const aiKnowledge = [
-    {
-      keys: ['upload', 'how to upload', 'upload a file', 'send file'],
-      answer: 'To upload a file: drag and drop it onto the upload zone on the main page, or click the zone to browse your files. Select up to 10 files at once, then hit the "UPLOAD FILES" button. You\'ll get a public link instantly!'
-    },
-    {
-      keys: ['file size', 'size limit', 'max', 'maximum', 'limit'],
-      answer: 'The maximum file size is <strong>50MB per file</strong>. You can upload up to <strong>10 files</strong> per batch. Files larger than 50MB will be skipped automatically.'
-    },
-    {
-      keys: ['delete', 'remove', 'delete token', 'delete my file', 'remove file'],
-      answer: 'After uploading, you get a unique <strong>delete token</strong>. Save it — it\'s the only way to delete your file. Go to the Menu → "Delete a File", paste your token, and hit Delete. This action is permanent!'
-    },
-    {
-      keys: ['private', 'privacy', 'public', 'who can see', 'anonymous'],
-      answer: 'All uploaded files are <strong>publicly accessible</strong> to anyone with the link — files are not private. However, uploads are anonymous (no account needed). Your IP is logged for abuse prevention only.'
-    },
-    {
-      keys: ['what file', 'file type', 'supported', 'format', 'extension'],
-      answer: 'TRASHCORE supports <strong>images</strong> (jpg, png, gif, webp...), <strong>videos</strong> (mp4, webm, mov...), and <strong>audio</strong> (mp3, wav, ogg...). Other file types are not accepted.'
-    },
-    {
-      keys: ['contact', 'support', 'help', 'reach', 'whatsapp', 'telegram'],
-      answer: 'You can reach the TRASHCORE team on:\n• <strong>WhatsApp:</strong> +254 787 909 276\n• <strong>Telegram:</strong> @trashcoredev2\n\nUse the Menu in the top-right corner to find quick contact links!'
-    },
-    {
-      keys: ['how long', 'expire', 'expiry', 'storage', 'permanent'],
-      answer: 'Files are stored <strong>indefinitely</strong> by default, but we reserve the right to remove files at any time — especially those violating our terms. There\'s no guaranteed permanent storage, so back up important files.'
-    },
-    {
-      keys: ['ip', 'ip address', 'logged', 'tracking', 'data'],
-      answer: 'Your <strong>IP address is logged</strong> for abuse prevention. TRASHCORE does not use tracking cookies and does not sell your data. See the Privacy Policy in the menu for full details.'
-    },
-    {
-      keys: ['faq', 'question', 'questions'],
-      answer: 'You can check the full FAQ by opening the <strong>Menu</strong> (top-right) → FAQ. It covers uploads, file sizes, deletion, privacy, and more!'
-    },
-    {
-      keys: ['policy', 'privacy policy', 'terms', 'tos', 'terms of service'],
-      answer: 'The <strong>Terms of Service</strong> cover permitted content, file limits, storage, and liability. The <strong>Privacy Policy</strong> explains data collection. Both are available in the Menu (top-right corner).'
-    },
-    {
-      keys: ['report', 'abuse', 'illegal', 'flag'],
-      answer: 'To report illegal or abusive content, contact us directly:\n• <strong>WhatsApp:</strong> +254 787 909 276\n• <strong>Telegram:</strong> @trashcoredev2\n\nSend the file URL and the reason — we respond quickly.'
-    },
-    {
-      keys: ['url', 'link', 'share', 'sharing'],
-      answer: 'After uploading, you\'ll see the public URL in the result card. Click <strong>COPY</strong> to copy it to your clipboard and share it anywhere. The link is permanent (unless the file is deleted).'
-    },
-    {
-      keys: ['account', 'login', 'sign up', 'register'],
-      answer: 'No account needed! TRASHCORE is completely anonymous. Just upload and share — no registration, no sign-in, no email required.'
-    },
-    {
-      keys: ['who made', 'creator', 'developer', 'author', 'built by', 'who created'],
-      answer: 'TRASHCORE was built by <strong>Trashcore Dev</strong> (GitHub: Tennor-modz). You can reach them on WhatsApp (+254 787 909 276) or Telegram (@trashcoredev2).'
-    },
-    {
-      keys: ['blue', 'color', 'colour', 'theme'],
-      answer: 'TRASHCORE v2.0 rocks a sleek <strong>blue theme</strong> — electric blue (#0088ff) with cyan accents (#00ccff). The dark background keeps everything crisp and readable. Like it? 💙'
-    },
+    { keys:['upload','how to upload','upload a file','send file'], answer:'Drag and drop a file onto the upload zone, or click it to browse. Pick up to 10 files, then hit "Upload files". You\'ll get a public link right away.' },
+    { keys:['file size','size limit','max','maximum','limit'], answer:'Max <strong>50MB per file</strong>, up to <strong>10 files</strong> per batch. Oversized files are skipped automatically.' },
+    { keys:['delete','remove','delete token','delete my file','remove file'], answer:'After uploading you get a <strong>delete token</strong> — save it. Use "Delete file" in the top bar and paste it in. This can\'t be undone.' },
+    { keys:['private','privacy','public','who can see','anonymous'], answer:'Files are <strong>public</strong> to anyone with the link, but uploading itself is anonymous — no account needed. Your IP is logged for abuse prevention only.' },
+    { keys:['what file','file type','supported','format','extension'], answer:'Images, videos, and audio are supported. Other file types are rejected.' },
+    { keys:['contact','support','help','reach','whatsapp','telegram'], answer:'WhatsApp: +254 787 909 276<br>Telegram: @trashcoredev2 — both are linked in the top bar.' },
+    { keys:['how long','expire','expiry','storage','permanent'], answer:'Files are stored indefinitely in general, but may be removed at any time — especially anything that breaks the rules.' },
+    { keys:['ip','ip address','logged','tracking','data'], answer:'Your IP is logged for abuse prevention only. No tracking cookies, no selling data — see the Privacy Policy for details.' },
+    { keys:['report','abuse','illegal','flag'], answer:'Message us on WhatsApp or Telegram with the file URL and the reason — we respond fast.' },
+    { keys:['url','link','share','sharing'], answer:'After uploading, hit COPY next to the URL in the result card, then share it anywhere.' },
+    { keys:['account','login','sign up','register'], answer:'No account needed — upload and share, that\'s it.' },
+    { keys:['who made','creator','developer','author','built by','who created'], answer:'Built by Trashcore Dev (GitHub: Tennor-modz).' },
   ];
-
-  function aiGetResponse(input) {
+  function aiGetResponse(input){
     const q = input.toLowerCase();
-    for (const entry of aiKnowledge) {
-      if (entry.keys.some(k => q.includes(k))) {
-        return entry.answer;
-      }
-    }
-    return "I'm not sure about that one! Try asking about <strong>uploads</strong>, <strong>file limits</strong>, <strong>deletion</strong>, <strong>privacy</strong>, or <strong>contact details</strong>. You can also reach us on WhatsApp (+254 787 909 276) or Telegram (@trashcoredev2) for direct help.";
+    for (const entry of aiKnowledge){ if (entry.keys.some(k=>q.includes(k))) return entry.answer; }
+    return "Not sure about that one — try asking about uploads, file limits, deletion, or privacy. Or reach us on WhatsApp / Telegram in the top bar.";
   }
-
-  function toggleAI() {
+  function toggleAI(){
     const panel = document.getElementById('aiPanel');
     panel.classList.toggle('open');
-    if (panel.classList.contains('open')) {
-      setTimeout(() => document.getElementById('aiInput').focus(), 300);
-    }
+    if (panel.classList.contains('open')) setTimeout(()=>document.getElementById('aiInput').focus(), 150);
   }
-
-  function aiAsk(question) {
-    document.getElementById('aiInput').value = question;
-    aiSend();
-  }
-
-  function aiAddMessage(text, role) {
+  function aiAsk(q){ document.getElementById('aiInput').value = q; aiSend(); }
+  function aiAddMessage(text, role){
     const msgs = document.getElementById('aiMessages');
     const el = document.createElement('div');
     el.className = 'ai-msg ' + role;
-    if (role === 'bot') {
-      el.innerHTML = `<div class="ai-msg-label">AI Assistant</div>${text}`;
-    } else {
-      el.innerHTML = `<div class="ai-msg-label">You</div>${text}`;
-    }
+    el.innerHTML = role === 'bot'
+      ? `<div class="ai-msg-label">AI Assistant</div>${text}`
+      : `<div class="ai-msg-label">You</div>${text}`;
     msgs.appendChild(el);
     msgs.scrollTop = msgs.scrollHeight;
-
-    // Hide quick buttons after first question
     document.getElementById('aiQuickBtns').style.display = 'none';
     return el;
   }
-
-  function aiSend() {
+  function aiSend(){
     const input = document.getElementById('aiInput');
     const question = input.value.trim();
     if (!question) return;
-
     aiAddMessage(question, 'user');
     input.value = '';
-
-    // Show typing indicator
     const msgs = document.getElementById('aiMessages');
     const typing = document.createElement('div');
     typing.className = 'ai-typing';
     typing.innerHTML = '<span></span><span></span><span></span>';
     msgs.appendChild(typing);
     msgs.scrollTop = msgs.scrollHeight;
-
-    setTimeout(() => {
-      typing.remove();
-      const response = aiGetResponse(question);
-      aiAddMessage(response, 'bot');
-    }, 800 + Math.random() * 400);
+    setTimeout(()=>{ typing.remove(); aiAddMessage(aiGetResponse(question), 'bot'); }, 500 + Math.random()*300);
   }
 
-  // ══════════════════════════════════════════
-  // MAIN APP
-  // ══════════════════════════════════════════
-  const dropZone   = document.getElementById('dropZone');
-  const fileInput  = document.getElementById('fileInput');
-  const queueEl    = document.getElementById('queue');
-  const uploadBtn  = document.getElementById('uploadBtn');
+  /* ═══ MAIN APP ═══ */
+  const dropZone = document.getElementById('dropZone');
+  const fileInput = document.getElementById('fileInput');
+  const queueEl = document.getElementById('queue');
+  const uploadBtn = document.getElementById('uploadBtn');
   const progressWrap = document.getElementById('progressWrap');
   const progressFill = document.getElementById('progressFill');
-  const progressPct  = document.getElementById('progressPct');
-  const resultsEl  = document.getElementById('results');
+  const progressPct = document.getElementById('progressPct');
+  const resultsEl = document.getElementById('results');
 
   let fileQueue = [];
 
-  async function loadStats() {
-    try {
+  async function loadStats(){
+    try{
       const r = await fetch(`${API}/stats`);
       const { stats } = await r.json();
       document.getElementById('statFiles').textContent = stats.totalFiles.toLocaleString();
-      document.getElementById('statSize').textContent  = stats.totalSizeMB >= 1024
-        ? (stats.totalSizeMB / 1024).toFixed(2) + ' GB'
-        : stats.totalSizeMB + ' MB';
+      document.getElementById('statSize').textContent = stats.totalSizeMB >= 1024 ? (stats.totalSizeMB/1024).toFixed(2)+' GB' : stats.totalSizeMB+' MB';
       document.getElementById('statViews').textContent = stats.totalViews.toLocaleString();
-      document.getElementById('statMax').textContent   = stats.maxFileSizeMB + ' MB';
-      document.getElementById('maxSizeLabel').textContent = stats.maxFileSizeMB + 'MB';
-    } catch (e) { console.warn('Stats unavailable'); }
+      document.getElementById('statMax').textContent = stats.maxFileSizeMB+' MB';
+      document.getElementById('maxSizeLabel').textContent = stats.maxFileSizeMB+'MB';
+      document.getElementById('maxSizeLabel2').textContent = stats.maxFileSizeMB+'MB';
+    } catch(e){ console.warn('Stats unavailable'); }
   }
 
-  async function loadRecent() {
-    try {
+  async function loadRecent(){
+    try{
       const r = await fetch(`${API}/recent`);
       const { files } = await r.json();
       if (!files || files.length === 0) return;
       document.getElementById('recentSection').style.display = 'block';
       const grid = document.getElementById('recentGrid');
       grid.innerHTML = '';
-      files.forEach(f => {
+      files.forEach(f=>{
         const card = document.createElement('a');
         card.className = 'recent-card';
-        card.href = f.url;
-        card.target = '_blank';
+        card.href = f.url; card.target = '_blank';
         const isImage = f.mimetype && f.mimetype.startsWith('image/');
         const isVideo = f.mimetype && f.mimetype.startsWith('video/');
         const isAudio = f.mimetype && f.mimetype.startsWith('audio/');
         const thumb = isImage
           ? `<img class="recent-thumb" src="${f.url}" loading="lazy" alt="${f.original_name}" />`
-          : `<div class="recent-thumb-placeholder">${isVideo ? '🎬' : isAudio ? '🎵' : '📁'}</div>`;
-        card.innerHTML = `${thumb}
-          <div class="recent-info">
-            <div class="recent-name">${f.original_name || f.filename}</div>
-            <div class="recent-meta"><span>${timeAgo(f.uploaded_at)}</span><span class="recent-views">👁 ${f.views || 0}</span></div>
-          </div>`;
+          : `<div class="recent-thumb-placeholder">${isVideo?'🎬':isAudio?'🎵':'📁'}</div>`;
+        card.innerHTML = `${thumb}<div class="recent-info"><div class="recent-name">${f.original_name || f.filename}</div><div class="recent-meta"><span>${timeAgo(f.uploaded_at)}</span><span class="recent-views">${f.views||0} views</span></div></div>`;
         grid.appendChild(card);
       });
-    } catch (e) { console.warn('Recent unavailable'); }
+    } catch(e){ console.warn('Recent unavailable'); }
   }
 
-  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
-  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
-  dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('drag-over'); addFiles([...e.dataTransfer.files]); });
-  fileInput.addEventListener('change', () => { addFiles([...fileInput.files]); fileInput.value = ''; });
+  dropZone.addEventListener('dragover', e=>{ e.preventDefault(); dropZone.classList.add('drag-over'); });
+  dropZone.addEventListener('dragleave', ()=>dropZone.classList.remove('drag-over'));
+  dropZone.addEventListener('drop', e=>{ e.preventDefault(); dropZone.classList.remove('drag-over'); addFiles([...e.dataTransfer.files]); });
+  fileInput.addEventListener('change', ()=>{ addFiles([...fileInput.files]); fileInput.value=''; });
 
-  function addFiles(files) {
-    files.forEach(f => {
-      if (!fileQueue.find(q => q.name === f.name && q.size === f.size)) fileQueue.push(f);
-    });
+  function addFiles(files){
+    files.forEach(f=>{ if (!fileQueue.find(q=>q.name===f.name && q.size===f.size)) fileQueue.push(f); });
     renderQueue();
   }
 
-  function renderQueue() {
+  function renderQueue(){
     queueEl.innerHTML = '';
-    fileQueue.forEach((f, i) => {
+    fileQueue.forEach((f,i)=>{
       const overSize = f.size > MAX_FILE_BYTES;
       const item = document.createElement('div');
-      item.className = 'queue-item' + (overSize ? ' too-large' : '');
+      item.className = 'queue-item' + (overSize?' too-large':'');
       item.innerHTML = `
         <div class="queue-type">${typeIcon(f.type)}</div>
         <div class="queue-info">
           <div class="queue-name">${f.name}</div>
-          <div class="queue-size ${overSize ? 'over' : ''}">${formatBytes(f.size)}${overSize ? ` — exceeds ${MAX_FILE_MB}MB limit` : ''}</div>
+          <div class="queue-size ${overSize?'over':''}">${formatBytes(f.size)}${overSize?` — exceeds ${MAX_FILE_MB}MB limit`:''}</div>
         </div>
         <button class="queue-remove" data-idx="${i}">✕</button>`;
       queueEl.appendChild(item);
     });
-
-    queueEl.querySelectorAll('.queue-remove').forEach(btn => {
-      btn.addEventListener('click', () => { fileQueue.splice(parseInt(btn.dataset.idx), 1); renderQueue(); });
+    queueEl.querySelectorAll('.queue-remove').forEach(btn=>{
+      btn.addEventListener('click', ()=>{ fileQueue.splice(parseInt(btn.dataset.idx),1); renderQueue(); });
     });
-
-    const hasValid = fileQueue.some(f => f.size <= MAX_FILE_BYTES);
-    uploadBtn.disabled = fileQueue.length === 0 || !hasValid;
+    const hasValid = fileQueue.some(f=>f.size<=MAX_FILE_BYTES);
+    uploadBtn.disabled = fileQueue.length===0 || !hasValid;
   }
 
-  uploadBtn.addEventListener('click', async () => {
-    const validFiles = fileQueue.filter(f => f.size <= MAX_FILE_BYTES);
+  uploadBtn.addEventListener('click', async ()=>{
+    const validFiles = fileQueue.filter(f=>f.size<=MAX_FILE_BYTES);
     const skipped = fileQueue.length - validFiles.length;
-
-    if (validFiles.length === 0) return;
-    if (skipped > 0) toast(`⚠ Skipping ${skipped} oversized file${skipped > 1 ? 's' : ''}`, true);
+    if (validFiles.length===0) return;
+    if (skipped>0) toast(`Skipping ${skipped} oversized file${skipped>1?'s':''}`, true);
 
     uploadBtn.disabled = true;
     resultsEl.innerHTML = '';
@@ -2099,27 +713,20 @@
     setProgress(0);
 
     const formData = new FormData();
-    validFiles.forEach(f => formData.append('files', f));
+    validFiles.forEach(f=>formData.append('files', f));
 
-    try {
+    try{
       const xhr = new XMLHttpRequest();
       xhr.open('POST', `${API}/upload`);
-
-      xhr.upload.addEventListener('progress', e => {
-        if (e.lengthComputable) setProgress(Math.round((e.loaded / e.total) * 100));
-      });
-
-      xhr.onload = () => {
+      xhr.upload.addEventListener('progress', e=>{ if (e.lengthComputable) setProgress(Math.round((e.loaded/e.total)*100)); });
+      xhr.onload = ()=>{
         progressWrap.classList.remove('active');
-        try {
+        try{
           const data = JSON.parse(xhr.responseText);
-          if (data.success) {
-            data.files.forEach(f => renderResult(f));
-            toast(`✓ ${data.files.length} file${data.files.length > 1 ? 's' : ''} uploaded`);
-            fileQueue = [];
-            renderQueue();
-            loadStats();
-            loadRecent();
+          if (data.success){
+            data.files.forEach(f=>renderResult(f));
+            toast(`${data.files.length} file${data.files.length>1?'s':''} uploaded`);
+            fileQueue = []; renderQueue(); loadStats(); loadRecent();
           } else {
             renderError(data.error || 'Upload failed');
             toast(data.error || 'Upload failed', true);
@@ -2127,101 +734,90 @@
         } catch { renderError('Invalid server response'); }
         uploadBtn.disabled = false;
       };
-
-      xhr.onerror = () => {
+      xhr.onerror = ()=>{
         progressWrap.classList.remove('active');
         renderError('Network error — is the server online?');
         toast('Network error', true);
         uploadBtn.disabled = false;
       };
-
       xhr.send(formData);
-    } catch (err) {
+    } catch(err){
       progressWrap.classList.remove('active');
       renderError(err.message);
       uploadBtn.disabled = false;
     }
   });
 
-  function setProgress(pct) {
-    progressFill.style.width = pct + '%';
-    progressPct.textContent = pct + '%';
-  }
+  function setProgress(pct){ progressFill.style.width = pct+'%'; progressPct.textContent = pct+'%'; }
 
-  function renderResult(f) {
+  function renderResult(f){
     const card = document.createElement('div');
     card.className = 'result-card success';
     card.innerHTML = `
       <div class="result-header">
-        <span class="result-icon">${typeIcon(f.mimetype)}</span>
+        <span>${typeIcon(f.mimetype)}</span>
         <span class="result-name">${f.originalName || f.filename}</span>
-        <span class="result-badge ok">UPLOADED</span>
+        <span class="result-badge ok">Uploaded</span>
       </div>
       <div class="result-url-wrap">
         <div class="result-url">${f.url}</div>
-        <button class="copy-btn" onclick="copyText('${f.url}', this)">COPY</button>
+        <button class="copy-btn" onclick="copyText('${f.url}', this)">Copy</button>
       </div>
       <div class="result-meta">
-        <div>SIZE: <span>${formatBytes(f.size)}</span></div>
-        <div>TYPE: <span>${f.mimetype}</span></div>
-        <div>ID: <span>${f.id}</span></div>
+        <div>SIZE: ${formatBytes(f.size)}</div>
+        <div>TYPE: ${f.mimetype}</div>
+        <div>ID: ${f.id}</div>
       </div>
       <div class="delete-token-wrap">
-        <span class="token-label">Delete Token:</span>
+        <span class="token-label">Delete token:</span>
         <div class="token-val">${f.deleteToken}</div>
-        <button class="copy-token-btn" onclick="copyText('${f.deleteToken}', this)">SAVE</button>
+        <button class="copy-token-btn" onclick="copyText('${f.deleteToken}', this)">Save</button>
       </div>`;
     resultsEl.prepend(card);
   }
 
-  function renderError(msg) {
+  function renderError(msg){
     const card = document.createElement('div');
     card.className = 'result-card error';
-    card.innerHTML = `
-      <div class="result-header">
-        <span class="result-icon">✗</span>
-        <span class="result-name">${msg}</span>
-        <span class="result-badge err">FAILED</span>
-      </div>`;
+    card.innerHTML = `<div class="result-header"><span>✗</span><span class="result-name">${msg}</span><span class="result-badge err">Failed</span></div>`;
     resultsEl.prepend(card);
   }
 
-  function copyText(text, btn) {
-    navigator.clipboard.writeText(text).then(() => {
+  function copyText(text, btn){
+    navigator.clipboard.writeText(text).then(()=>{
       const orig = btn.textContent;
-      btn.textContent = 'COPIED!';
-      btn.classList.add('copied');
-      setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 2000);
+      btn.textContent = 'Copied!'; btn.classList.add('copied');
+      setTimeout(()=>{ btn.textContent = orig; btn.classList.remove('copied'); }, 2000);
     });
   }
 
-  function toast(msg, isError = false) {
+  function toast(msg, isError=false){
     const el = document.createElement('div');
-    el.className = 'toast' + (isError ? ' error' : '');
+    el.className = 'toast' + (isError?' error':'');
     el.textContent = msg;
     document.body.appendChild(el);
-    setTimeout(() => el.remove(), 3000);
+    setTimeout(()=>el.remove(), 3000);
   }
 
-  function formatBytes(b) {
+  function formatBytes(b){
     if (!b) return '0 B';
-    if (b < 1024) return b + ' B';
-    if (b < 1024 * 1024) return (b / 1024).toFixed(1) + ' KB';
-    return (b / (1024 * 1024)).toFixed(2) + ' MB';
+    if (b<1024) return b+' B';
+    if (b<1024*1024) return (b/1024).toFixed(1)+' KB';
+    return (b/(1024*1024)).toFixed(2)+' MB';
   }
 
-  function timeAgo(dateStr) {
+  function timeAgo(dateStr){
     if (!dateStr) return '—';
     const diff = Date.now() - new Date(dateStr).getTime();
-    const m = Math.floor(diff / 60000);
-    if (m < 1) return 'just now';
-    if (m < 60) return `${m}m ago`;
-    const h = Math.floor(m / 60);
-    if (h < 24) return `${h}h ago`;
-    return `${Math.floor(h / 24)}d ago`;
+    const m = Math.floor(diff/60000);
+    if (m<1) return 'just now';
+    if (m<60) return `${m}m ago`;
+    const h = Math.floor(m/60);
+    if (h<24) return `${h}h ago`;
+    return `${Math.floor(h/24)}d ago`;
   }
 
-  function typeIcon(mime) {
+  function typeIcon(mime){
     if (!mime) return '📁';
     if (mime.startsWith('image/')) return '🖼';
     if (mime.startsWith('video/')) return '🎬';
