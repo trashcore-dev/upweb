@@ -135,6 +135,14 @@
     font-weight:700;font-size:13px;letter-spacing:.02em;cursor:pointer;margin-bottom:10px;
   }
   .dl-btn:hover{background:var(--ink);border-color:var(--ink);}
+  .dl-btn:disabled{opacity:.6;cursor:wait;}
+  .dl-progress-wrap{display:none;margin-bottom:10px;}
+  .dl-progress-wrap.active{display:block;}
+  .dl-progress-label{font-size:10.5px;color:var(--muted);font-family:var(--font-mono);margin-bottom:5px;display:flex;justify-content:space-between;}
+  .dl-progress-track{height:6px;background:var(--line-soft);border:1px solid var(--line);overflow:hidden;}
+  .dl-progress-fill{height:100%;background:var(--accent);width:0%;transition:width .15s linear;}
+  .dl-progress-fill.indeterminate{width:40%;animation:dlIndeterminate 1.1s ease-in-out infinite;}
+  @keyframes dlIndeterminate{0%{margin-left:-40%;}100%{margin-left:100%;}}
   .dl-secondary-row{display:flex;gap:8px;}
   .dl-secondary-row .btn{flex:1;font-size:11px;padding:9px 10px;}
   .dl-hosted-by{margin-top:22px;font-size:11px;color:var(--muted);text-align:center;}
@@ -317,7 +325,11 @@
       <div class="dl-icon" id="dlIcon">📁</div>
       <div class="dl-name" id="dlName">file</div>
       <div class="dl-meta" id="dlMeta">—</div>
-      <a class="dl-btn" id="dlDownloadBtn" href="#" download>⬇ Download</a>
+      <div class="dl-progress-wrap" id="dlProgressWrap">
+        <div class="dl-progress-label"><span id="dlProgressStatus">Starting…</span><span id="dlProgressPct"></span></div>
+        <div class="dl-progress-track"><div class="dl-progress-fill" id="dlProgressFill"></div></div>
+      </div>
+      <button class="dl-btn" id="dlDownloadBtn" onclick="startDownload()">⬇ Download</button>
       <div class="dl-secondary-row">
         <button class="btn" id="dlCopyBtn" onclick="dlCopyLink(this)">Copy link</button>
         <button class="btn" id="dlShareBtn" onclick="dlShare()" style="display:none;">Share</button>
@@ -571,22 +583,100 @@
     if (f.mimetype) p.set('t', f.mimetype);
     return window.location.origin + window.location.pathname + '?' + p.toString();
   }
+  let dlFile = { url: '', name: 'file', size: null, mime: '' };
+
   function renderDownloadView(){
     const p = new URLSearchParams(window.location.search);
-    const url = p.get('d');
-    const name = p.get('n') || 'file';
-    const size = p.get('s') ? parseInt(p.get('s'), 10) : null;
-    const mime = p.get('t') || '';
+    dlFile = {
+      url: p.get('d'),
+      name: p.get('n') || 'file',
+      size: p.get('s') ? parseInt(p.get('s'), 10) : null,
+      mime: p.get('t') || ''
+    };
 
-    document.title = name + ' — TRASHCORE';
-    document.getElementById('dlIcon').textContent = typeIcon(mime, name);
-    document.getElementById('dlName').textContent = name;
-    document.getElementById('dlMeta').textContent = [size ? formatBytes(size) : null, mime || null].filter(Boolean).join(' · ') || 'Ready to download';
-    document.getElementById('dlDownloadBtn').href = url;
+    document.title = dlFile.name + ' — TRASHCORE';
+    document.getElementById('dlIcon').textContent = typeIcon(dlFile.mime, dlFile.name);
+    document.getElementById('dlName').textContent = dlFile.name;
+    document.getElementById('dlMeta').textContent = [dlFile.size ? formatBytes(dlFile.size) : null, dlFile.mime || null].filter(Boolean).join(' · ') || 'Ready to download';
     document.getElementById('downloadView').style.display = 'block';
 
     if (navigator.share) document.getElementById('dlShareBtn').style.display = 'block';
   }
+
+  // Downloads the file via fetch so we can show real progress, then saves
+  // it as a blob. Falls back to a plain navigation download (no progress,
+  // but still works) if fetch fails — e.g. the host doesn't send CORS
+  // headers for cross-origin reads.
+  async function startDownload(){
+    const btn = document.getElementById('dlDownloadBtn');
+    const wrap = document.getElementById('dlProgressWrap');
+    const fill = document.getElementById('dlProgressFill');
+    const pctEl = document.getElementById('dlProgressPct');
+    const statusEl = document.getElementById('dlProgressStatus');
+
+    btn.disabled = true;
+    btn.textContent = 'Downloading…';
+    wrap.classList.add('active');
+    fill.style.width = '0%';
+    fill.classList.remove('indeterminate');
+    statusEl.textContent = 'Connecting…';
+    pctEl.textContent = '';
+
+    try{
+      const res = await fetch(dlFile.url);
+      if (!res.ok || !res.body) throw new Error('bad response');
+
+      const total = parseInt(res.headers.get('content-length') || '0', 10) || dlFile.size || 0;
+      const reader = res.body.getReader();
+      const chunks = [];
+      let received = 0;
+
+      if (!total) fill.classList.add('indeterminate');
+      statusEl.textContent = 'Downloading…';
+
+      while (true){
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+        received += value.length;
+        if (total){
+          const pct = Math.min(100, Math.round((received / total) * 100));
+          fill.style.width = pct + '%';
+          pctEl.textContent = pct + '%';
+        } else {
+          pctEl.textContent = formatBytes(received);
+        }
+      }
+
+      const blob = new Blob(chunks, { type: dlFile.mime || 'application/octet-stream' });
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = dlFile.name;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 4000);
+
+      fill.style.width = '100%';
+      pctEl.textContent = '100%';
+      statusEl.textContent = 'Done';
+      btn.textContent = '✓ Downloaded — click to save again';
+      btn.disabled = false;
+    } catch (err){
+      // CORS or network issue with the progress-tracked fetch — fall back
+      // to a normal browser download with no progress bar.
+      statusEl.textContent = 'Progress unavailable — downloading directly…';
+      fill.classList.add('indeterminate');
+      window.location.href = dlFile.url;
+      setTimeout(() => {
+        wrap.classList.remove('active');
+        btn.disabled = false;
+        btn.textContent = '⬇ Download';
+      }, 2500);
+    }
+  }
+
   function dlCopyLink(btn){
     copyText(window.location.href, btn);
   }
